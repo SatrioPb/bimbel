@@ -1,0 +1,22 @@
+# Dependencies
+bimbel-api/vendor/
+bimbel-fe/node_modules/
+
+# Environment & Local Databases
+bimbel-api/.env
+.env
+.env.local
+
+# Builds & Production Outputs
+bimbel-fe/dist/
+
+# Logs & Caches
+bimbel-api/storage/*.key
+bimbel-api/storage/logs/*.log
+bimbel-api/bootstrap/cache/*.php
+
+# IDE & OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
