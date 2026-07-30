@@ -64,12 +64,29 @@ class FinanceController extends Controller
                 ->where('status', 'hadir')
                 ->count();
 
-            $feePerSession = $student->fee_per_session;
+            $feePerSession = (float)$student->fee_per_session;
             $totalAmount = $totalSessions * $feePerSession;
             $discount = 0;
-            $finalAmount = $totalAmount - $discount;
+            $finalAmount = max(0, $totalAmount - $discount);
 
-            $invoiceNumber = 'INV/' . $year . '/' . sprintf('%02d', $month) . '/' . str_pad($student->id, 3, '0', STR_PAD_LEFT);
+            // Find existing invoice or generate a unique invoice number
+            $existingInvoice = Invoice::where('student_id', $student->id)
+                ->where('month', $month)
+                ->where('year', $year)
+                ->first();
+
+            if ($existingInvoice) {
+                $invoiceNumber = $existingInvoice->invoice_number;
+                $status = $existingInvoice->status; // retain existing status
+            } else {
+                $seq = Invoice::where('year', $year)->where('month', $month)->count() + 1;
+                $invoiceNumber = 'INV/' . $year . '/' . sprintf('%02d', $month) . '/' . sprintf('%03d', $seq);
+                while (Invoice::where('invoice_number', $invoiceNumber)->exists()) {
+                    $seq++;
+                    $invoiceNumber = 'INV/' . $year . '/' . sprintf('%02d', $month) . '/' . sprintf('%03d', $seq);
+                }
+                $status = 'unpaid';
+            }
 
             Invoice::updateOrCreate(
                 [
@@ -84,7 +101,7 @@ class FinanceController extends Controller
                     'total_amount' => $totalAmount,
                     'discount' => $discount,
                     'final_amount' => $finalAmount,
-                    'status' => 'unpaid',
+                    'status' => $status,
                 ]
             );
 
@@ -111,6 +128,9 @@ class FinanceController extends Controller
     {
         $invoice = Invoice::findOrFail($id);
 
+        $status = $request->input('status', 'paid');
+        $request->merge(['status' => $status]);
+
         $request->validate([
             'status' => 'required|in:paid,unpaid',
             'discount' => 'nullable|numeric|min:0',
@@ -118,13 +138,13 @@ class FinanceController extends Controller
         ]);
 
         $discount = $request->has('discount') ? (float)$request->discount : $invoice->discount;
-        $finalAmount = $invoice->total_amount - $discount;
+        $finalAmount = max(0, $invoice->total_amount - $discount);
 
         $invoice->update([
-            'status' => $request->status,
+            'status' => $status,
             'discount' => $discount,
             'final_amount' => $finalAmount,
-            'paid_at' => $request->status === 'paid' ? now() : null,
+            'paid_at' => $status === 'paid' ? now() : null,
             'notes' => $request->notes ?? $invoice->notes,
         ]);
 

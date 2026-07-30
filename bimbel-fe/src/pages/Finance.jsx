@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
-import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Sparkles } from 'lucide-react';
+import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter } from 'lucide-react';
 
 const Finance = () => {
   const [invoices, setInvoices] = useState([]);
@@ -10,9 +10,16 @@ const Finance = () => {
   const [loading, setLoading] = useState(true);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
+  // Filters
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'paid', 'unpaid'
+
+  // Generate Modal State
   const [genMonth, setGenMonth] = useState(new Date().getMonth() + 1);
   const [genYear, setGenYear] = useState(new Date().getFullYear());
   const [generating, setGenerating] = useState(false);
+
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     fetchFinanceData();
@@ -26,8 +33,8 @@ const Finance = () => {
         apiClient.get('/finance/income-summary')
       ]);
 
-      if (invRes.data.success) setInvoices(invRes.data.data);
-      if (incRes.data.success) setIncomeSummary(incRes.data.data);
+      if (invRes.data?.success) setInvoices(invRes.data.data);
+      if (incRes.data?.success) setIncomeSummary(incRes.data.data);
     } catch (err) {
       console.error('Error fetching finance data:', err);
     } finally {
@@ -38,46 +45,49 @@ const Finance = () => {
   const handleGenerateInvoices = async (e) => {
     e.preventDefault();
     setGenerating(true);
+    setMessage(null);
     try {
       const res = await apiClient.post('/finance/invoices/generate', {
         month: genMonth,
         year: genYear
       });
-      if (res.data.success) {
-        alert(res.data.message || 'Invoice bulan ini berhasil dibuat!');
+      if (res.data?.success) {
+        setMessage({ type: 'success', text: res.data.message || 'Invoice bulan ini berhasil dibuat!' });
         setShowGenerateModal(false);
         fetchFinanceData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal membuat invoice.');
+      setMessage({ type: 'danger', text: err.response?.data?.message || 'Gagal membuat invoice.' });
     } finally {
       setGenerating(false);
     }
   };
 
   const handleMarkPaid = async (invoiceId) => {
-    if (!window.confirm('Tandai invoice ini sebagai LUNAS?')) return;
+    if (!window.confirm('Konfirmasi: Tandai invoice ini sebagai LUNAS?')) return;
     try {
-      const res = await apiClient.put(`/finance/invoices/${invoiceId}/pay`);
-      if (res.data.success) {
+      const res = await apiClient.put(`/finance/invoices/${invoiceId}/pay`, {
+        status: 'paid'
+      });
+      if (res.data?.success) {
+        setMessage({ type: 'success', text: 'Status pembayaran berhasil diperbarui menjadi LUNAS.' });
         fetchFinanceData();
       }
     } catch (err) {
-      alert('Gagal memperbarui status invoice: ' + err.message);
+      alert('Gagal memperbarui status invoice: ' + (err.response?.data?.message || err.message));
     }
   };
 
   const handleDownloadInvoicePdf = async (invoiceId, invNum) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/v1/finance/invoices/${invoiceId}/pdf`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiClient.get(`/finance/invoices/${invoiceId}/pdf`, {
+        responseType: 'blob'
       });
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.setAttribute('download', `invoice_${invNum.replace(/\//g, '_')}.pdf`);
+      const safeNo = (invNum || 'invoice').replace(/[\/\\]/g, '_');
+      link.setAttribute('download', `Invoice_${safeNo}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -88,12 +98,11 @@ const Finance = () => {
 
   const handleExportIncome = async (format) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/v1/finance/income-summary/${format}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiClient.get(`/finance/income-summary/${format}`, {
+        responseType: 'blob'
       });
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      const mimeType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
       link.setAttribute('download', `laporan_pemasukan_${new Date().toISOString().split('T')[0]}.${format === 'pdf' ? 'pdf' : 'xlsx'}`);
@@ -105,8 +114,24 @@ const Finance = () => {
     }
   };
 
-  const totalPaidAmount = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + parseFloat(i.final_amount), 0);
-  const totalUnpaidAmount = invoices.filter(i => i.status === 'unpaid').reduce((sum, i) => sum + parseFloat(i.final_amount), 0);
+  const filteredInvoices = invoices.filter(inv => {
+    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+    const term = search.toLowerCase();
+    const invNo = inv.invoice_number?.toLowerCase() || '';
+    const studentName = inv.student?.name?.toLowerCase() || '';
+    const parentName = inv.student?.parent_name?.toLowerCase() || '';
+    const matchesSearch = invNo.includes(term) || studentName.includes(term) || parentName.includes(term);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  const totalPaidAmount = invoices
+    .filter(i => i.status === 'paid')
+    .reduce((sum, i) => sum + (parseFloat(i.final_amount) || 0), 0);
+
+  const totalUnpaidAmount = invoices
+    .filter(i => i.status === 'unpaid')
+    .reduce((sum, i) => sum + (parseFloat(i.final_amount) || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -138,6 +163,19 @@ const Finance = () => {
         </div>
       </div>
 
+      {message && (
+        <div style={{
+          padding: '0.75rem 1rem',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: message.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+          border: message.type === 'success' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)',
+          color: message.type === 'success' ? '#34d399' : '#fb7185',
+          fontSize: '0.85rem'
+        }}>
+          {message.text}
+        </div>
+      )}
+
       {/* Summary Cards */}
       <div className="grid-3">
         <StatCard
@@ -165,14 +203,42 @@ const Finance = () => {
 
       {/* Table Invoices */}
       <div className="glass-card">
-        <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff', marginBottom: '1rem' }}>
-          📑 Daftar Invoice Les per Wali Murid
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+            📑 Daftar Invoice Les per Wali Murid ({filteredInvoices.length})
+          </h3>
+
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', width: '220px' }}>
+              <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                className="form-input"
+                style={{ paddingLeft: '2.2rem', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+                placeholder="Cari invoice/murid..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <select
+              className="form-select"
+              style={{ width: '150px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Semua Status</option>
+              <option value="paid">LUNAS</option>
+              <option value="unpaid">BELUM BAYAR</option>
+            </select>
+          </div>
+        </div>
 
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Memuat daftar invoice...</p>
-        ) : invoices.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Belum ada invoice les yang diterbitkan.</p>
+        ) : filteredInvoices.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Tidak ada invoice les yang sesuai dengan filter.</p>
         ) : (
           <div className="table-container">
             <table className="custom-table">
@@ -190,45 +256,50 @@ const Finance = () => {
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((inv) => (
-                  <tr key={inv.id}>
-                    <td style={{ fontWeight: 700, color: '#818cf8' }}>{inv.invoice_number}</td>
-                    <td style={{ fontWeight: 600 }}>{inv.student?.name || inv.student_id}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{inv.student?.parent_name || '-'}</td>
-                    <td>Bulan {inv.month} / {inv.year}</td>
-                    <td>{inv.total_sessions} Sesi</td>
-                    <td>Rp {parseFloat(inv.fee_per_session).toLocaleString('id-ID')}</td>
-                    <td style={{ fontWeight: 800, color: '#ffffff' }}>
-                      Rp {parseFloat(inv.final_amount).toLocaleString('id-ID')}
-                    </td>
-                    <td>
-                      <span className={`badge ${inv.status === 'paid' ? 'badge-emerald' : 'badge-rose'}`}>
-                        {inv.status === 'paid' ? 'LUNAS' : 'BELUM BAYAR'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        {inv.status === 'unpaid' && (
+                {filteredInvoices.map((inv) => {
+                  const fee = parseFloat(inv.fee_per_session || 0);
+                  const finalAmt = parseFloat(inv.final_amount || 0);
+
+                  return (
+                    <tr key={inv.id}>
+                      <td style={{ fontWeight: 700, color: '#818cf8' }}>{inv.invoice_number}</td>
+                      <td style={{ fontWeight: 600 }}>{inv.student?.name || inv.student_id}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{inv.student?.parent_name || '-'}</td>
+                      <td>Bulan {inv.month} / {inv.year}</td>
+                      <td>{inv.total_sessions} Sesi</td>
+                      <td>Rp {fee.toLocaleString('id-ID')}</td>
+                      <td style={{ fontWeight: 800, color: '#ffffff' }}>
+                        Rp {finalAmt.toLocaleString('id-ID')}
+                      </td>
+                      <td>
+                        <span className={`badge ${inv.status === 'paid' ? 'badge-emerald' : 'badge-rose'}`}>
+                          {inv.status === 'paid' ? 'LUNAS' : 'BELUM BAYAR'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          {inv.status === 'unpaid' && (
+                            <button
+                              onClick={() => handleMarkPaid(inv.id)}
+                              className="btn btn-emerald btn-sm"
+                            >
+                              <CheckCircle2 size={14} />
+                              <span>Tandai Lunas</span>
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleMarkPaid(inv.id)}
-                            className="btn btn-emerald btn-sm"
+                            onClick={() => handleDownloadInvoicePdf(inv.id, inv.invoice_number)}
+                            className="btn btn-secondary btn-sm"
+                            title="Download PDF Invoice"
                           >
-                            <CheckCircle2 size={14} />
-                            <span>Tandai Lunas</span>
+                            <FileText size={14} color="#fb7185" />
+                            <span>PDF</span>
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDownloadInvoicePdf(inv.id, inv.invoice_number)}
-                          className="btn btn-secondary btn-sm"
-                          title="Download PDF Invoice"
-                        >
-                          <FileText size={14} color="#fb7185" />
-                          <span>PDF</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

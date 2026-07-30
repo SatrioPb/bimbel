@@ -109,15 +109,16 @@ const Database = () => {
   // Handle Tutor Open Modal
   const handleOpenTutorModal = (tutor = null) => {
     if (tutor) {
+      const profile = tutor.tutor_profile || tutor.tutorProfile || {};
       setEditingTutor(tutor);
       setTutorForm({
-        name: tutor.user?.name || '',
-        email: tutor.user?.email || '',
+        name: tutor.name || tutor.user?.name || '',
+        email: tutor.email || tutor.user?.email || '',
         password: '',
-        phone: tutor.user?.phone || '',
-        nip_code: tutor.nip_code,
-        specialization: tutor.specialization || '',
-        rate_per_session: tutor.rate_per_session
+        phone: tutor.phone || tutor.user?.phone || '',
+        nip_code: profile.nip_code || tutor.nip_code || '',
+        specialization: profile.specialization || tutor.specialization || '',
+        rate_per_session: profile.rate_per_session || tutor.rate_per_session || 100000
       });
     } else {
       setEditingTutor(null);
@@ -281,29 +282,34 @@ const Database = () => {
                 </tr>
               </thead>
               <tbody>
-                {tutors.map((t) => (
-                  <tr key={t.id}>
-                    <td style={{ fontWeight: 700, color: '#c084fc' }}>{t.nip_code}</td>
-                    <td style={{ fontWeight: 600 }}>{t.user?.name || '-'}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{t.user?.email || '-'}</td>
-                    <td>{t.user?.phone || '-'}</td>
-                    <td>{t.specialization || '-'}</td>
-                    <td style={{ fontWeight: 700, color: '#34d399' }}>
-                      Rp {parseFloat(t.rate_per_session).toLocaleString('id-ID')}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <button onClick={() => handleOpenTutorModal(t)} className="btn btn-secondary btn-sm">
-                          <Edit2 size={14} color="#c084fc" />
-                          <span>Edit</span>
-                        </button>
-                        <button onClick={() => handleDelete(t.id, 'tutors')} className="btn btn-danger btn-sm">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {tutors.map((t) => {
+                  const profile = t.tutor_profile || t.tutorProfile || {};
+                  const rate = parseFloat(profile.rate_per_session || t.rate_per_session || 0);
+
+                  return (
+                    <tr key={t.id}>
+                      <td style={{ fontWeight: 700, color: '#c084fc' }}>{profile.nip_code || t.nip_code || '-'}</td>
+                      <td style={{ fontWeight: 600 }}>{t.name || t.user?.name || '-'}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{t.email || t.user?.email || '-'}</td>
+                      <td>{t.phone || t.user?.phone || '-'}</td>
+                      <td>{profile.specialization || t.specialization || '-'}</td>
+                      <td style={{ fontWeight: 700, color: '#34d399' }}>
+                        Rp {isNaN(rate) ? '0' : rate.toLocaleString('id-ID')}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button onClick={() => handleOpenTutorModal(t)} className="btn btn-secondary btn-sm">
+                            <Edit2 size={14} color="#c084fc" />
+                            <span>Edit</span>
+                          </button>
+                          <button onClick={() => handleDelete(t.id, 'tutors')} className="btn btn-danger btn-sm">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
