@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\TutorController;
+use App\Http\Controllers\Api\LesCategoryController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\FinanceController;
@@ -24,8 +25,10 @@ Route::prefix('v1')->group(function () {
         // Homepage Dashboard Summary
         Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
-        // List Murid untuk Dropdown Presensi (Bisa diakses Admin & Guru)
+        // Dropdown Options (Bisa diakses Admin & Guru untuk Form Absensi)
         Route::get('/students/options', [StudentController::class, 'index']);
+        Route::get('/tutors/options', [TutorController::class, 'index']);
+        Route::get('/les-categories/options', [LesCategoryController::class, 'index']);
 
         // Menu Absensi
         Route::apiResource('/attendances', AttendanceController::class);
@@ -50,6 +53,7 @@ Route::prefix('v1')->group(function () {
             Route::prefix('database')->group(function () {
                 Route::apiResource('/students', StudentController::class);
                 Route::apiResource('/tutors', TutorController::class);
+                Route::apiResource('/les-categories', LesCategoryController::class);
             });
 
             // Menu Keuangan

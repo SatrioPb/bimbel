@@ -21,14 +21,6 @@ class StudentController extends Controller
             });
         }
 
-        if ($request->filled('jenis_les')) {
-            $query->where('jenis_les', $request->jenis_les);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         $students = $query->orderBy('name', 'asc')->get();
 
         return response()->json([
@@ -44,19 +36,7 @@ class StudentController extends Controller
             'parent_name' => 'required|string|max:255',
             'parent_phone' => 'required|string|max:20',
             'address' => 'nullable|string',
-            'jenis_les' => 'required|in:reguler,privat_in_house,privat_in_bimbel',
-            'duration_minutes' => 'required|integer|in:60,90',
-            'fee_per_session' => 'required|numeric|min:0',
-            'status' => 'nullable|in:active,inactive',
         ]);
-
-        // Validation for Reguler: fixed 90 minutes
-        if ($request->jenis_les === 'reguler' && (int)$request->duration_minutes !== 90) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis les Reguler harus berdurasi 90 menit.',
-            ], 422);
-        }
 
         // Generate student code e.g. M2026001
         $latestId = Student::max('id') + 1;
@@ -68,10 +48,6 @@ class StudentController extends Controller
             'parent_name' => $request->parent_name,
             'parent_phone' => $request->parent_phone,
             'address' => $request->address,
-            'jenis_les' => $request->jenis_les,
-            'duration_minutes' => $request->duration_minutes,
-            'fee_per_session' => $request->fee_per_session,
-            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json([
@@ -83,7 +59,7 @@ class StudentController extends Controller
 
     public function show($id)
     {
-        $student = Student::with(['attendances', 'invoices'])->findOrFail($id);
+        $student = Student::with(['attendances.lesCategory', 'attendances.tutor', 'invoices'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -100,31 +76,13 @@ class StudentController extends Controller
             'parent_name' => 'sometimes|required|string|max:255',
             'parent_phone' => 'sometimes|required|string|max:20',
             'address' => 'nullable|string',
-            'jenis_les' => 'sometimes|required|in:reguler,privat_in_house,privat_in_bimbel',
-            'duration_minutes' => 'sometimes|required|integer|in:60,90',
-            'fee_per_session' => 'sometimes|required|numeric|min:0',
-            'status' => 'nullable|in:active,inactive',
         ]);
-
-        $jenisLes = $request->jenis_les ?? $student->jenis_les;
-        $durationMinutes = $request->duration_minutes ?? $student->duration_minutes;
-
-        if ($jenisLes === 'reguler' && (int)$durationMinutes !== 90) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis les Reguler harus berdurasi 90 menit.',
-            ], 422);
-        }
 
         $student->update($request->only([
             'name',
             'parent_name',
             'parent_phone',
             'address',
-            'jenis_les',
-            'duration_minutes',
-            'fee_per_session',
-            'status',
         ]));
 
         return response()->json([

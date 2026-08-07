@@ -15,10 +15,6 @@ return new class extends Migration
             $table->string('parent_name'); // Nama Wali Murid
             $table->string('parent_phone'); // No HP Wali Murid
             $table->text('address')->nullable();
-            $table->enum('jenis_les', ['reguler', 'privat_in_house', 'privat_in_bimbel']);
-            $table->integer('duration_minutes')->default(90); // 60 or 90
-            $table->decimal('fee_per_session', 12, 2)->default(0);
-            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

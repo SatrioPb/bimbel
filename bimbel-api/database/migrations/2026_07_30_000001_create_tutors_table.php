@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('tutors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nip_code')->unique();
+            $table->string('name');
+            $table->string('phone')->nullable();
             $table->string('specialization')->nullable();
             $table->decimal('rate_per_session', 12, 2)->default(0);
             $table->timestamps();

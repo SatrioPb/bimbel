@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { Database as DbIcon, Plus, Edit2, Trash2, Users, UserCheck, ShieldAlert } from 'lucide-react';
+import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen } from 'lucide-react';
 
 const Database = () => {
-  const [activeTab, setActiveTab] = useState('students'); // 'students' or 'tutors'
+  const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories'
   const [students, setStudents] = useState([]);
   const [tutors, setTutors] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Student Form Modal State
@@ -17,11 +18,7 @@ const Database = () => {
     name: '',
     parent_name: '',
     parent_phone: '',
-    address: '',
-    jenis_les: 'reguler',
-    duration_minutes: 90,
-    fee_per_session: 75000,
-    status: 'active'
+    address: ''
   });
 
   // Tutor Form Modal State
@@ -29,12 +26,20 @@ const Database = () => {
   const [editingTutor, setEditingTutor] = useState(null);
   const [tutorForm, setTutorForm] = useState({
     name: '',
-    email: '',
-    password: 'password123',
     phone: '',
     nip_code: '',
     specialization: '',
     rate_per_session: 100000
+  });
+
+  // Category Form Modal State
+  const [showCatModal, setShowCatModal] = useState(false);
+  const [editingCat, setEditingCat] = useState(null);
+  const [catForm, setCatForm] = useState({
+    code: '',
+    name: '',
+    default_duration: 90,
+    fee_per_session: 75000
   });
 
   useEffect(() => {
@@ -46,10 +51,13 @@ const Database = () => {
     try {
       if (activeTab === 'students') {
         const res = await apiClient.get('/database/students');
-        if (res.data.success) setStudents(res.data.data);
-      } else {
+        if (res.data?.success) setStudents(res.data.data);
+      } else if (activeTab === 'tutors') {
         const res = await apiClient.get('/database/tutors');
-        if (res.data.success) setTutors(res.data.data);
+        if (res.data?.success) setTutors(res.data.data);
+      } else {
+        const res = await apiClient.get('/database/les-categories');
+        if (res.data?.success) setCategories(res.data.data);
       }
     } catch (err) {
       console.error('Error fetching database:', err);
@@ -58,7 +66,7 @@ const Database = () => {
     }
   };
 
-  // Handle Student Open Modal
+  // Student Modal Handlers
   const handleOpenStudentModal = (student = null) => {
     if (student) {
       setEditingStudent(student);
@@ -67,11 +75,7 @@ const Database = () => {
         name: student.name,
         parent_name: student.parent_name,
         parent_phone: student.parent_phone,
-        address: student.address || '',
-        jenis_les: student.jenis_les,
-        duration_minutes: student.duration_minutes,
-        fee_per_session: student.fee_per_session,
-        status: student.status
+        address: student.address || ''
       });
     } else {
       setEditingStudent(null);
@@ -80,17 +84,12 @@ const Database = () => {
         name: '',
         parent_name: '',
         parent_phone: '',
-        address: '',
-        jenis_les: 'reguler',
-        duration_minutes: 90,
-        fee_per_session: 75000,
-        status: 'active'
+        address: ''
       });
     }
     setShowStudentModal(true);
   };
 
-  // Submit Student
   const handleSaveStudent = async (e) => {
     e.preventDefault();
     try {
@@ -106,26 +105,21 @@ const Database = () => {
     }
   };
 
-  // Handle Tutor Open Modal
+  // Tutor Modal Handlers
   const handleOpenTutorModal = (tutor = null) => {
     if (tutor) {
-      const profile = tutor.tutor_profile || tutor.tutorProfile || {};
       setEditingTutor(tutor);
       setTutorForm({
-        name: tutor.name || tutor.user?.name || '',
-        email: tutor.email || tutor.user?.email || '',
-        password: '',
-        phone: tutor.phone || tutor.user?.phone || '',
-        nip_code: profile.nip_code || tutor.nip_code || '',
-        specialization: profile.specialization || tutor.specialization || '',
-        rate_per_session: profile.rate_per_session || tutor.rate_per_session || 100000
+        name: tutor.name || '',
+        phone: tutor.phone || '',
+        nip_code: tutor.nip_code || '',
+        specialization: tutor.specialization || '',
+        rate_per_session: tutor.rate_per_session || 100000
       });
     } else {
       setEditingTutor(null);
       setTutorForm({
         name: '',
-        email: '',
-        password: 'password123',
         phone: '',
         nip_code: `G${new Date().getFullYear()}${Math.floor(100 + Math.random() * 900)}`,
         specialization: '',
@@ -135,7 +129,6 @@ const Database = () => {
     setShowTutorModal(true);
   };
 
-  // Submit Tutor
   const handleSaveTutor = async (e) => {
     e.preventDefault();
     try {
@@ -148,6 +141,43 @@ const Database = () => {
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal menyimpan data guru.');
+    }
+  };
+
+  // Category Modal Handlers
+  const handleOpenCatModal = (cat = null) => {
+    if (cat) {
+      setEditingCat(cat);
+      setCatForm({
+        code: cat.code,
+        name: cat.name,
+        default_duration: cat.default_duration,
+        fee_per_session: cat.fee_per_session
+      });
+    } else {
+      setEditingCat(null);
+      setCatForm({
+        code: '',
+        name: '',
+        default_duration: 90,
+        fee_per_session: 75000
+      });
+    }
+    setShowCatModal(true);
+  };
+
+  const handleSaveCat = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingCat) {
+        await apiClient.put(`/database/les-categories/${editingCat.id}`, catForm);
+      } else {
+        await apiClient.post('/database/les-categories', catForm);
+      }
+      setShowCatModal(false);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menyimpan kategori les.');
     }
   };
 
@@ -169,10 +199,10 @@ const Database = () => {
         <div>
           <span className="badge badge-amber" style={{ marginBottom: '0.4rem' }}>🛡️ Admin Only</span>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff' }}>
-            Menu Database Murid & Guru Les
+            Menu Database Les
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Kelola data murid les, jenis les (Reguler, Privat In House, Privat In Bimbel), serta data guru pengajar
+            Kelola data Murid Les, Data Guru Les, serta Kategori Tipe Les (PIB, PIH, Reguler)
           </p>
         </div>
 
@@ -182,10 +212,15 @@ const Database = () => {
               <Plus size={18} />
               <span>Tambah Murid Baru</span>
             </button>
-          ) : (
+          ) : activeTab === 'tutors' ? (
             <button onClick={() => handleOpenTutorModal()} className="btn btn-emerald">
               <Plus size={18} />
               <span>Tambah Guru Baru</span>
+            </button>
+          ) : (
+            <button onClick={() => handleOpenCatModal()} className="btn btn-secondary" style={{ borderColor: '#818cf8', color: '#818cf8' }}>
+              <Plus size={18} />
+              <span>Tambah Kategori Tipe Les</span>
             </button>
           )}
         </div>
@@ -207,6 +242,12 @@ const Database = () => {
           >
             👨‍🏫 Database Guru Les ({tutors.length})
           </button>
+          <button
+            className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+            onClick={() => setActiveTab('categories')}
+          >
+            🏷️ Kategori Tipe Les ({categories.length})
+          </button>
         </div>
 
         {loading ? (
@@ -221,10 +262,7 @@ const Database = () => {
                   <th>Nama Murid</th>
                   <th>Wali Murid</th>
                   <th>No HP Wali</th>
-                  <th>Jenis Les</th>
-                  <th>Durasi</th>
-                  <th>Biaya / Sesi</th>
-                  <th>Status</th>
+                  <th>Alamat Rumah</th>
                   <th style={{ textAlign: 'center' }}>Aksi</th>
                 </tr>
               </thead>
@@ -235,21 +273,7 @@ const Database = () => {
                     <td style={{ fontWeight: 600 }}>{s.name}</td>
                     <td>{s.parent_name}</td>
                     <td style={{ color: 'var(--text-muted)' }}>{s.parent_phone}</td>
-                    <td>
-                      <span className={`badge ${
-                        s.jenis_les === 'reguler' ? 'badge-indigo' :
-                        s.jenis_les === 'privat_in_house' ? 'badge-purple' : 'badge-emerald'
-                      }`}>
-                        {s.jenis_les.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td>{s.duration_minutes} Menit</td>
-                    <td>Rp {parseFloat(s.fee_per_session).toLocaleString('id-ID')}</td>
-                    <td>
-                      <span className={`badge ${s.status === 'active' ? 'badge-emerald' : 'badge-rose'}`}>
-                        {s.status}
-                      </span>
-                    </td>
+                    <td>{s.address || '-'}</td>
                     <td style={{ textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                         <button onClick={() => handleOpenStudentModal(s)} className="btn btn-secondary btn-sm">
@@ -266,7 +290,7 @@ const Database = () => {
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : activeTab === 'tutors' ? (
           /* Table Guru */
           <div className="table-container">
             <table className="custom-table">
@@ -274,27 +298,23 @@ const Database = () => {
                 <tr>
                   <th>NIP Code</th>
                   <th>Nama Guru</th>
-                  <th>Email</th>
                   <th>No HP</th>
                   <th>Spesialisasi</th>
-                  <th>Tarif / Sesi</th>
+                  <th>Tarif Honor / Sesi</th>
                   <th style={{ textAlign: 'center' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {tutors.map((t) => {
-                  const profile = t.tutor_profile || t.tutorProfile || {};
-                  const rate = parseFloat(profile.rate_per_session || t.rate_per_session || 0);
-
+                  const rate = parseFloat(t.rate_per_session || 0);
                   return (
                     <tr key={t.id}>
-                      <td style={{ fontWeight: 700, color: '#c084fc' }}>{profile.nip_code || t.nip_code || '-'}</td>
-                      <td style={{ fontWeight: 600 }}>{t.name || t.user?.name || '-'}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{t.email || t.user?.email || '-'}</td>
-                      <td>{t.phone || t.user?.phone || '-'}</td>
-                      <td>{profile.specialization || t.specialization || '-'}</td>
+                      <td style={{ fontWeight: 700, color: '#c084fc' }}>{t.nip_code}</td>
+                      <td style={{ fontWeight: 600 }}>{t.name}</td>
+                      <td>{t.phone || '-'}</td>
+                      <td>{t.specialization || '-'}</td>
                       <td style={{ fontWeight: 700, color: '#34d399' }}>
-                        Rp {isNaN(rate) ? '0' : rate.toLocaleString('id-ID')}
+                        Rp {rate.toLocaleString('id-ID')}
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -303,6 +323,49 @@ const Database = () => {
                             <span>Edit</span>
                           </button>
                           <button onClick={() => handleDelete(t.id, 'tutors')} className="btn btn-danger btn-sm">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* Table Kategori Les */
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Kode Tipe</th>
+                  <th>Nama Kategori Les</th>
+                  <th>Durasi Default</th>
+                  <th>Tarif Biaya / Sesi</th>
+                  <th style={{ textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((c) => {
+                  const fee = parseFloat(c.fee_per_session || 0);
+                  return (
+                    <tr key={c.id}>
+                      <td style={{ fontWeight: 700, color: '#818cf8' }}>
+                        <span className="badge badge-indigo">{c.code}</span>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{c.name}</td>
+                      <td>{c.default_duration} Menit</td>
+                      <td style={{ fontWeight: 700, color: '#34d399' }}>
+                        Rp {fee.toLocaleString('id-ID')}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button onClick={() => handleOpenCatModal(c)} className="btn btn-secondary btn-sm">
+                            <Edit2 size={14} color="#818cf8" />
+                            <span>Edit</span>
+                          </button>
+                          <button onClick={() => handleDelete(c.id, 'les-categories')} className="btn btn-danger btn-sm">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -323,28 +386,27 @@ const Database = () => {
         title={editingStudent ? 'Edit Data Murid Les' : 'Tambah Murid Les Baru'}
       >
         <form onSubmit={handleSaveStudent}>
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Kode Murid</label>
-              <input
-                type="text"
-                className="form-input"
-                value={studentForm.student_code}
-                onChange={(e) => setStudentForm({ ...studentForm, student_code: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Nama Murid *</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Nama lengkap murid"
-                value={studentForm.name}
-                onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label className="form-label">Kode Murid</label>
+            <input
+              type="text"
+              className="form-input"
+              value={studentForm.student_code}
+              onChange={(e) => setStudentForm({ ...studentForm, student_code: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Nama Murid *</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Nama lengkap murid"
+              value={studentForm.name}
+              onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
+              required
+            />
           </div>
 
           <div className="grid-2">
@@ -372,77 +434,12 @@ const Database = () => {
             </div>
           </div>
 
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Jenis Les *</label>
-              <select
-                className="form-select"
-                value={studentForm.jenis_les}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setStudentForm({
-                    ...studentForm,
-                    jenis_les: val,
-                    duration_minutes: val === 'reguler' ? 90 : studentForm.duration_minutes
-                  });
-                }}
-              >
-                <option value="reguler">Reguler (90 Menit)</option>
-                <option value="privat_in_house">Privat In House (Rumah)</option>
-                <option value="privat_in_bimbel">Privat In Bimbel (Tempat Les)</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Durasi Waktu Les *</label>
-              <select
-                className="form-select"
-                value={studentForm.duration_minutes}
-                onChange={(e) => setStudentForm({ ...studentForm, duration_minutes: parseInt(e.target.value) })}
-                disabled={studentForm.jenis_les === 'reguler'}
-              >
-                {studentForm.jenis_les === 'reguler' ? (
-                  <option value={90}>90 Menit (Fixed Reguler)</option>
-                ) : (
-                  <>
-                    <option value={60}>60 Menit</option>
-                    <option value={90}>90 Menit</option>
-                  </>
-                )}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Tarif Biaya / Sesi (Rp) *</label>
-              <input
-                type="number"
-                className="form-input"
-                value={studentForm.fee_per_session}
-                onChange={(e) => setStudentForm({ ...studentForm, fee_per_session: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Status Murid *</label>
-              <select
-                className="form-select"
-                value={studentForm.status}
-                onChange={(e) => setStudentForm({ ...studentForm, status: e.target.value })}
-              >
-                <option value="active">Aktif</option>
-                <option value="inactive">Non-Aktif</option>
-              </select>
-            </div>
-          </div>
-
           <div className="form-group">
             <label className="form-label">Alamat Rumah</label>
             <input
               type="text"
               className="form-input"
-              placeholder="Alamat domisili"
+              placeholder="Alamat domisili murid"
               value={studentForm.address}
               onChange={(e) => setStudentForm({ ...studentForm, address: e.target.value })}
             />
@@ -468,44 +465,6 @@ const Database = () => {
         <form onSubmit={handleSaveTutor}>
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Nama Guru *</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Nama & Gelar"
-                value={tutorForm.name}
-                onChange={(e) => setTutorForm({ ...tutorForm, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Email Akun Guru *</label>
-              <input
-                type="email"
-                className="form-input"
-                placeholder="guru@bimbel.com"
-                value={tutorForm.email}
-                onChange={(e) => setTutorForm({ ...tutorForm, email: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          {!editingTutor && (
-            <div className="form-group">
-              <label className="form-label">Password Akun Baru *</label>
-              <input
-                type="password"
-                className="form-input"
-                value={tutorForm.password}
-                onChange={(e) => setTutorForm({ ...tutorForm, password: e.target.value })}
-                required
-              />
-            </div>
-          )}
-
-          <div className="grid-2">
-            <div className="form-group">
               <label className="form-label">Kode NIP Guru *</label>
               <input
                 type="text"
@@ -516,6 +475,20 @@ const Database = () => {
               />
             </div>
             <div className="form-group">
+              <label className="form-label">Nama Guru *</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Nama & Gelar"
+                value={tutorForm.name}
+                onChange={(e) => setTutorForm({ ...tutorForm, name: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid-2">
+            <div className="form-group">
               <label className="form-label">No. HP Guru</label>
               <input
                 type="text"
@@ -525,9 +498,6 @@ const Database = () => {
                 onChange={(e) => setTutorForm({ ...tutorForm, phone: e.target.value })}
               />
             </div>
-          </div>
-
-          <div className="grid-2">
             <div className="form-group">
               <label className="form-label">Spesialisasi Mata Pelajaran</label>
               <input
@@ -538,16 +508,17 @@ const Database = () => {
                 onChange={(e) => setTutorForm({ ...tutorForm, specialization: e.target.value })}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">Tarif Honor Guru / Sesi (Rp) *</label>
-              <input
-                type="number"
-                className="form-input"
-                value={tutorForm.rate_per_session}
-                onChange={(e) => setTutorForm({ ...tutorForm, rate_per_session: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Tarif Honor Guru / Sesi (Rp) *</label>
+            <input
+              type="number"
+              className="form-input"
+              value={tutorForm.rate_per_session}
+              onChange={(e) => setTutorForm({ ...tutorForm, rate_per_session: parseFloat(e.target.value) })}
+              required
+            />
           </div>
 
           <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
@@ -556,6 +527,73 @@ const Database = () => {
             </button>
             <button type="submit" className="btn btn-emerald">
               Simpan Data Guru
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Category Form */}
+      <Modal
+        isOpen={showCatModal}
+        onClose={() => setShowCatModal(false)}
+        title={editingCat ? 'Edit Kategori Tipe Les' : 'Tambah Kategori Tipe Les Baru'}
+      >
+        <form onSubmit={handleSaveCat}>
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Kode Tipe Les * (Contoh: PIB, PIH, REG)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Kode misal: PIB"
+                value={catForm.code}
+                onChange={(e) => setCatForm({ ...catForm, code: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Nama Kategori Les *</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Contoh: Privat In Bimbel"
+                value={catForm.name}
+                onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Durasi Waktu Default *</label>
+              <select
+                className="form-select"
+                value={catForm.default_duration}
+                onChange={(e) => setCatForm({ ...catForm, default_duration: parseInt(e.target.value) })}
+              >
+                <option value={60}>60 Menit</option>
+                <option value={90}>90 Menit</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Tarif Biaya Les / Sesi (Rp) *</label>
+              <input
+                type="number"
+                className="form-input"
+                value={catForm.fee_per_session}
+                onChange={(e) => setCatForm({ ...catForm, fee_per_session: parseFloat(e.target.value) })}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <button type="button" onClick={() => setShowCatModal(false)} className="btn btn-secondary">
+              Batal
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Simpan Kategori Les
             </button>
           </div>
         </form>

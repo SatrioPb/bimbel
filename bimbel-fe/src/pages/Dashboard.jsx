@@ -22,7 +22,7 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error('Error fetching dashboard summary:', err);
-      setErrorMsg('Gagal terhubung ke server Laravel API backend. Pastikan "php artisan serve" aktif di port 8000.');
+      setErrorMsg('Gagal terhubung ke server Laravel API backend. Pastikan "php artisan serve" aktif.');
     } finally {
       setLoading(false);
     }
@@ -36,14 +36,8 @@ const Dashboard = () => {
     );
   }
 
-  const studentsByJenis = summary?.students_by_jenis_les || { reguler: 0, privat_in_house: 0, privat_in_bimbel: 0 };
-  const breakdownDuration = summary?.students_by_jenis_les_and_duration || {};
+  const studentsByJenis = summary?.students_by_jenis_les || {};
   const totalActiveStudents = summary?.total_active_students || 0;
-
-  const getPercentage = (count) => {
-    if (!totalActiveStudents) return 0;
-    return Math.round((count / totalActiveStudents) * 100);
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -122,21 +116,21 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Rangkuman Murid Les per Jenis Les & Durasi */}
+      {/* Rangkuman Sesi Les per Kategori Tipe Les */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
-              📚 Rangkuman Murid Les per Jenis Les
+              📚 Rangkuman Sesi Les per Kategori
             </h3>
             <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-              Pembagian murid berdasarkan paket Reguler, Privat In House, dan Privat In Bimbel
+              Pembagian aktivitas bimbingan belajar berdasarkan Kategori Les (REG, PIH, PIB)
             </p>
           </div>
         </div>
 
         <div className="grid-3">
-          {/* Card 1: Reguler */}
+          {/* Card 1: Reguler (REG) */}
           <div className="glass-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
@@ -145,33 +139,16 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Les Reguler</h4>
-                  <span className="badge badge-indigo">Durasi: 90 Menit</span>
+                  <span className="badge badge-indigo">Kode: REG (90 mnt)</span>
                 </div>
               </div>
               <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8' }}>
-                {studentsByJenis.reguler || 0} Murid
+                {studentsByJenis.REG || 0} Sesi
               </span>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                <span>Persentase Total</span>
-                <span>{getPercentage(studentsByJenis.reguler)}%</span>
-              </div>
-              <div style={{ height: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${getPercentage(studentsByJenis.reguler)}%`, backgroundColor: '#6366f1', borderRadius: '4px' }} />
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>⏱️ Durasi 90 Menit:</span>
-                <strong style={{ color: '#ffffff' }}>{breakdownDuration.reguler_90 ?? studentsByJenis.reguler ?? 0} Murid</strong>
-              </div>
             </div>
           </div>
 
-          {/* Card 2: Privat In House */}
+          {/* Card 2: Privat In House (PIH) */}
           <div className="glass-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
@@ -180,37 +157,16 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Privat In House</h4>
-                  <span className="badge badge-purple">Tatap Muka di Rumah</span>
+                  <span className="badge badge-purple">Kode: PIH (90 mnt)</span>
                 </div>
               </div>
               <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#c084fc' }}>
-                {studentsByJenis.privat_in_house || 0} Murid
+                {studentsByJenis.PIH || 0} Sesi
               </span>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                <span>Persentase Total</span>
-                <span>{getPercentage(studentsByJenis.privat_in_house)}%</span>
-              </div>
-              <div style={{ height: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${getPercentage(studentsByJenis.privat_in_house)}%`, backgroundColor: '#8b5cf6', borderRadius: '4px' }} />
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>⏱️ Durasi 60 Menit:</span>
-                <strong style={{ color: '#ffffff' }}>{breakdownDuration.privat_in_house_60 ?? 0} Murid</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>⏱️ Durasi 90 Menit:</span>
-                <strong style={{ color: '#ffffff' }}>{breakdownDuration.privat_in_house_90 ?? 0} Murid</strong>
-              </div>
             </div>
           </div>
 
-          {/* Card 3: Privat In Bimbel */}
+          {/* Card 3: Privat In Bimbel (PIB) */}
           <div className="glass-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
@@ -219,33 +175,12 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Privat In Bimbel</h4>
-                  <span className="badge badge-emerald">Tatap Muka di Bimbel</span>
+                  <span className="badge badge-emerald">Kode: PIB (60 mnt)</span>
                 </div>
               </div>
               <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399' }}>
-                {studentsByJenis.privat_in_bimbel || 0} Murid
+                {studentsByJenis.PIB || 0} Sesi
               </span>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                <span>Persentase Total</span>
-                <span>{getPercentage(studentsByJenis.privat_in_bimbel)}%</span>
-              </div>
-              <div style={{ height: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${getPercentage(studentsByJenis.privat_in_bimbel)}%`, backgroundColor: '#10b981', borderRadius: '4px' }} />
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>⏱️ Durasi 60 Menit:</span>
-                <strong style={{ color: '#ffffff' }}>{breakdownDuration.privat_in_bimbel_60 ?? 0} Murid</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>⏱️ Durasi 90 Menit:</span>
-                <strong style={{ color: '#ffffff' }}>{breakdownDuration.privat_in_bimbel_90 ?? 0} Murid</strong>
-              </div>
             </div>
           </div>
         </div>

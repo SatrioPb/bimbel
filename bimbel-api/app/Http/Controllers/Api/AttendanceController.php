@@ -4,20 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
-use App\Models\Student;
+use App\Models\LesCategory;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
-        $query = Attendance::with(['tutor', 'student']);
+        $query = Attendance::with(['tutor', 'student', 'lesCategory']);
 
-        // Guru can only see their own attendances by default unless filtering
-        if ($user->role === 'guru') {
-            $query->where('tutor_id', $user->id);
-        } elseif ($request->filled('tutor_id')) {
+        if ($request->filled('tutor_id')) {
             $query->where('tutor_id', $request->tutor_id);
         }
 
@@ -25,16 +21,12 @@ class AttendanceController extends Controller
             $query->where('student_id', $request->student_id);
         }
 
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
@@ -47,58 +39,46 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
-        $user = $request->user();
-
         $request->validate([
+            'tutor_id' => 'required|exists:tutors,id',
             'student_id' => 'required|exists:students,id',
-            'tutor_id' => 'nullable|exists:users,id',
+            'les_category_id' => 'required|exists:les_categories,id',
             'date' => 'required|date',
-            'start_time' => 'nullable|date_format:H:i',
-            'end_time' => 'nullable|date_format:H:i',
+            'start_time' => 'nullable|string',
+            'end_time' => 'nullable|string',
             'duration_minutes' => 'required|integer|in:60,90',
-            'subject' => 'required|string|max:255',
-            'topic' => 'nullable|string',
-            'status' => 'required|in:hadir,izin,sakit,alpha',
+            'subject' => 'nullable|string|max:255', // Mata Pelajaran Optional
             'notes' => 'nullable|string',
         ]);
 
-        $tutorId = $user->role === 'guru' ? $user->id : ($request->tutor_id ?? $user->id);
-
-        $student = Student::findOrFail($request->student_id);
-
-        // Validation for student duration rule if specified
-        if ($student->jenis_les === 'reguler' && (int)$request->duration_minutes !== 90) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Durasi absensi untuk jenis les Reguler harus 90 menit.',
-            ], 422);
-        }
+        $category = LesCategory::find($request->les_category_id);
+        $feePerSession = $category ? $category->fee_per_session : 0;
 
         $attendance = Attendance::create([
-            'tutor_id' => $tutorId,
+            'tutor_id' => $request->tutor_id,
             'student_id' => $request->student_id,
+            'les_category_id' => $request->les_category_id,
             'date' => $request->date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
             'duration_minutes' => $request->duration_minutes,
             'subject' => $request->subject,
-            'topic' => $request->topic,
-            'status' => $request->status,
+            'fee_per_session' => $feePerSession,
             'notes' => $request->notes,
         ]);
 
-        $attendance->load(['tutor', 'student']);
+        $attendance->load(['tutor', 'student', 'lesCategory']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Absensi berhasil dicatat.',
+            'message' => 'Presensi mengajar berhasil dicatat.',
             'data' => $attendance,
         ], 201);
     }
 
     public function show($id)
     {
-        $attendance = Attendance::with(['tutor', 'student'])->findOrFail($id);
+        $attendance = Attendance::with(['tutor', 'student', 'lesCategory'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -109,63 +89,56 @@ class AttendanceController extends Controller
     public function update(Request $request, $id)
     {
         $attendance = Attendance::findOrFail($id);
-        $user = $request->user();
-
-        // Guru can only update their own attendance records
-        if ($user->role === 'guru' && $attendance->tutor_id !== $user->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk mengubah absensi ini.',
-            ], 403);
-        }
 
         $request->validate([
+            'tutor_id' => 'sometimes|required|exists:tutors,id',
+            'student_id' => 'sometimes|required|exists:students,id',
+            'les_category_id' => 'sometimes|required|exists:les_categories,id',
             'date' => 'sometimes|required|date',
-            'start_time' => 'nullable|date_format:H:i',
-            'end_time' => 'nullable|date_format:H:i',
+            'start_time' => 'nullable|string',
+            'end_time' => 'nullable|string',
             'duration_minutes' => 'sometimes|required|integer|in:60,90',
-            'subject' => 'sometimes|required|string|max:255',
-            'topic' => 'nullable|string',
-            'status' => 'sometimes|required|in:hadir,izin,sakit,alpha',
+            'subject' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
-        $attendance->update($request->only([
-            'date',
-            'start_time',
-            'end_time',
-            'duration_minutes',
-            'subject',
-            'topic',
-            'status',
-            'notes',
-        ]));
+        if ($request->filled('les_category_id')) {
+            $category = LesCategory::find($request->les_category_id);
+            $feePerSession = $category ? $category->fee_per_session : $attendance->fee_per_session;
+        } else {
+            $feePerSession = $attendance->fee_per_session;
+        }
 
-        $attendance->load(['tutor', 'student']);
+        $attendance->update([
+            'tutor_id' => $request->tutor_id ?? $attendance->tutor_id,
+            'student_id' => $request->student_id ?? $attendance->student_id,
+            'les_category_id' => $request->les_category_id ?? $attendance->les_category_id,
+            'date' => $request->date ?? $attendance->date,
+            'start_time' => $request->start_time ?? $attendance->start_time,
+            'end_time' => $request->end_time ?? $attendance->end_time,
+            'duration_minutes' => $request->duration_minutes ?? $attendance->duration_minutes,
+            'subject' => $request->subject ?? $attendance->subject,
+            'fee_per_session' => $feePerSession,
+            'notes' => $request->notes ?? $attendance->notes,
+        ]);
+
+        $attendance->load(['tutor', 'student', 'lesCategory']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Data absensi berhasil diperbarui.',
+            'message' => 'Presensi mengajar berhasil diperbarui.',
             'data' => $attendance,
         ]);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $user = $request->user();
-        if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hanya Admin yang dapat menghapus data absensi.',
-            ], 403);
-        }
-
         $attendance = Attendance::findOrFail($id);
         $attendance->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Data absensi berhasil dihapus.',
+            'message' => 'Presensi mengajar berhasil dihapus.',
         ]);
     }
 }

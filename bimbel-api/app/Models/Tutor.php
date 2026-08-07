@@ -10,18 +10,15 @@ class Tutor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'nip_code',
+        'name',
+        'phone',
         'specialization',
         'rate_per_session',
     ];
 
-    protected $casts = [
-        'rate_per_session' => 'decimal:2',
-    ];
-
-    public function user()
+    public function attendances()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->hasMany(Attendance::class);
     }
 }

@@ -1,24 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
-import { History as HistoryIcon, FileText, FileSpreadsheet, Download, Search, Filter } from 'lucide-react';
+import { History as HistoryIcon, FileText, FileSpreadsheet, Filter, Search, Calendar, UserCheck } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const History = () => {
-  const [activeTab, setActiveTab] = useState('students'); // 'students' or 'tutors'
-  const [historyData, setHistoryData] = useState([]);
+  const { user } = useAuth();
+  const [historyTab, setHistoryTab] = useState('tutors'); // 'tutors' or 'students'
+  const [attendances, setAttendances] = useState([]);
+  const [tutors, setTutors] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+
+  // Filters
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedTutorId, setSelectedTutorId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
 
   useEffect(() => {
     fetchHistory();
-  }, [activeTab]);
+  }, [historyTab, selectedMonth, selectedYear, selectedTutorId, selectedStudentId]);
+
+  const fetchFilterOptions = async () => {
+    try {
+      const [tRes, sRes] = await Promise.all([
+        apiClient.get('/tutors/options').catch(() => ({ data: { data: [] } })),
+        apiClient.get('/students/options').catch(() => ({ data: { data: [] } }))
+      ]);
+      if (tRes.data?.success) setTutors(tRes.data.data);
+      if (sRes.data?.success) setStudents(sRes.data.data);
+    } catch (err) {
+      console.error('Error fetching filter options:', err);
+    }
+  };
 
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const endpoint = activeTab === 'students' ? '/reports/history/students' : '/reports/history/tutors';
-      const res = await apiClient.get(endpoint);
-      if (res.data.success) {
-        setHistoryData(res.data.data);
+      const endpoint = historyTab === 'tutors' ? '/reports/history/tutors' : '/reports/history/students';
+      const params = {};
+      if (selectedMonth) params.month = selectedMonth;
+      if (selectedYear) params.year = selectedYear;
+      if (historyTab === 'tutors' && selectedTutorId) params.tutor_id = selectedTutorId;
+      if (historyTab === 'students' && selectedStudentId) params.student_id = selectedStudentId;
+
+      const res = await apiClient.get(endpoint, { params });
+      if (res.data?.success) {
+        setAttendances(res.data.data);
       }
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -27,155 +59,171 @@ const History = () => {
     }
   };
 
-  const handleExport = async (type, format) => {
+  const handleExport = async (format) => {
     try {
-      const url = `/api/v1/reports/history/${type}/${format}`;
-      const token = localStorage.getItem('auth_token');
+      const endpoint = historyTab === 'tutors' 
+        ? `/reports/history/tutors/${format}` 
+        : `/reports/history/students/${format}`;
 
-      // Fetch blob with auth header
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const params = new URLSearchParams();
+      if (selectedMonth) params.append('month', selectedMonth);
+      if (selectedYear) params.append('year', selectedYear);
+      if (historyTab === 'tutors' && selectedTutorId) params.append('tutor_id', selectedTutorId);
+      if (historyTab === 'students' && selectedStudentId) params.append('student_id', selectedStudentId);
+
+      const response = await apiClient.get(`${endpoint}?${params.toString()}`, {
+        responseType: 'blob'
       });
 
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      const mimeType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.setAttribute('download', `riwayat_${type}_${new Date().toISOString().split('T')[0]}.${format === 'pdf' ? 'pdf' : 'xlsx'}`);
+      link.setAttribute('download', `riwayat_${historyTab}_${new Date().toISOString().split('T')[0]}.${format}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      alert('Gagal mengeksport berkas: ' + err.message);
+      alert(`Gagal mengeksport berkas ${format}.`);
     }
   };
 
-  const filteredData = historyData.filter(item => {
-    const term = search.toLowerCase();
-    const studentName = item.student?.name?.toLowerCase() || '';
-    const tutorName = item.tutor?.name?.toLowerCase() || '';
-    const subject = item.subject?.toLowerCase() || '';
-    return studentName.includes(term) || tutorName.includes(term) || subject.includes(term);
-  });
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header & Export Actions */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Banner & Export Actions */}
       <div className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
-            📋 Riwayat Absensi Sesi Les
-          </h3>
+          <span className="badge badge-indigo" style={{ marginBottom: '0.4rem' }}>📊 Export & Report</span>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff' }}>
+            Menu Riwayat Absensi Les
+          </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Lihat rekapitulasi presensi murid dan jam mengajar guru les
+            Pantau riwayat jam mengajar guru les dan kehadiran murid les dengan filter bulan
           </p>
         </div>
 
-        {/* Export Buttons */}
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button
-            onClick={() => handleExport(activeTab, 'pdf')}
-            className="btn btn-secondary"
-            style={{ borderColor: 'rgba(244, 63, 94, 0.4)', color: '#fb7185' }}
-          >
-            <FileText size={18} color="#fb7185" />
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: 'rgba(244, 63, 94, 0.4)', color: '#fb7185' }}>
+            <FileText size={18} />
             <span>Export PDF</span>
           </button>
-          <button
-            onClick={() => handleExport(activeTab, 'excel')}
-            className="btn btn-emerald"
-          >
+          <button onClick={() => handleExport('excel')} className="btn btn-emerald">
             <FileSpreadsheet size={18} />
             <span>Export Excel</span>
           </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Card */}
       <div className="glass-card">
         {/* Tabs */}
-        <div className="tabs-container">
-          <button
-            className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
-            onClick={() => setActiveTab('students')}
-          >
-            👨‍🎓 Riwayat Absensi Murid Les
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'tutors' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tutors')}
-          >
-            👩‍🏫 Riwayat Absensi Guru Les
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div className="tabs-container" style={{ margin: 0 }}>
+            <button
+              className={`tab-btn ${historyTab === 'tutors' ? 'active' : ''}`}
+              onClick={() => setHistoryTab('tutors')}
+            >
+              👨‍🏫 Riwayat Absensi Guru Les
+            </button>
+            <button
+              className={`tab-btn ${historyTab === 'students' ? 'active' : ''}`}
+              onClick={() => setHistoryTab('students')}
+            >
+              🎓 Riwayat Absensi Murid Les
+            </button>
+          </div>
+
+          {/* Filters Bar */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* Month Filter */}
+            <select
+              className="form-select"
+              style={{ width: '140px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="">Semua Bulan</option>
+              {[...Array(12)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Bulan {i + 1} ({new Date(2026, i, 1).toLocaleString('id-ID', { month: 'long' })})
+                </option>
+              ))}
+            </select>
+
+            {/* Year Filter */}
+            <select
+              className="form-select"
+              style={{ width: '100px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              {[2024, 2025, 2026, 2027].map((yr) => (
+                <option key={yr} value={yr}>{yr}</option>
+              ))}
+            </select>
+
+            {/* Specific Filter dropdown */}
+            {historyTab === 'tutors' ? (
+              <select
+                className="form-select"
+                style={{ width: '170px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+                value={selectedTutorId}
+                onChange={(e) => setSelectedTutorId(e.target.value)}
+              >
+                <option value="">Semua Guru Les</option>
+                {tutors.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            ) : (
+              <select
+                className="form-select"
+                style={{ width: '170px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+                value={selectedStudentId}
+                onChange={(e) => setSelectedStudentId(e.target.value)}
+              >
+                <option value="">Semua Murid Les</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ marginBottom: '1.25rem', maxWidth: '360px', position: 'relative' }}>
-          <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2.5rem' }}
-            placeholder="Cari murid, guru, atau mapel..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Table Data */}
+        {/* Table Content */}
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Memuat riwayat absensi...</p>
-        ) : filteredData.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Tidak ada data riwayat absensi ditemukan.</p>
+        ) : attendances.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Tidak ada data riwayat absensi yang ditemukan.</p>
         ) : (
           <div className="table-container">
             <table className="custom-table">
               <thead>
                 <tr>
                   <th>Tanggal</th>
-                  {activeTab === 'students' ? (
-                    <>
-                      <th>Murid Les</th>
-                      <th>Guru Les</th>
-                    </>
-                  ) : (
-                    <>
-                      <th>Guru Les</th>
-                      <th>Murid Les</th>
-                    </>
-                  )}
+                  <th>Nama Guru</th>
+                  <th>Nama Murid</th>
+                  <th>Kategori Les</th>
                   <th>Mata Pelajaran</th>
-                  <th>Topik / Materi</th>
                   <th>Durasi</th>
-                  <th>Status</th>
                   <th>Catatan</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{item.date}</td>
-                    <td style={{ fontWeight: 700, color: '#818cf8' }}>
-                      {activeTab === 'students' ? (item.student?.name || item.student_id) : (item.tutor?.name || item.tutor_id)}
-                    </td>
-                    <td style={{ color: 'var(--text-muted)' }}>
-                      {activeTab === 'students' ? (item.tutor?.name || item.tutor_id) : (item.student?.name || item.student_id)}
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{item.subject}</td>
-                    <td>{item.topic || '-'}</td>
-                    <td>{item.duration_minutes} Menit</td>
+                {attendances.map((att) => (
+                  <tr key={att.id}>
+                    <td style={{ whiteSpace: 'nowrap' }}>{att.date}</td>
+                    <td style={{ fontWeight: 600, color: '#c084fc' }}>{att.tutor?.name || '-'}</td>
+                    <td style={{ fontWeight: 600, color: '#818cf8' }}>{att.student?.name || '-'}</td>
                     <td>
-                      <span className={`badge ${
-                        item.status === 'hadir' ? 'badge-emerald' :
-                        item.status === 'izin' ? 'badge-amber' :
-                        item.status === 'sakit' ? 'badge-indigo' : 'badge-rose'
-                      }`}>
-                        {item.status}
+                      <span className="badge badge-indigo">
+                        {att.les_category?.name || att.lesCategory?.name || 'Les'}
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{item.notes || '-'}</td>
+                    <td>{att.subject || '-'}</td>
+                    <td>{att.duration_minutes} Menit</td>
+                    <td style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{att.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>

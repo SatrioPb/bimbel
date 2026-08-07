@@ -12,28 +12,28 @@ class Attendance extends Model
     protected $fillable = [
         'tutor_id',
         'student_id',
+        'les_category_id',
         'date',
         'start_time',
         'end_time',
         'duration_minutes',
         'subject',
-        'topic',
-        'status',
+        'fee_per_session',
         'notes',
-    ];
-
-    protected $casts = [
-        'date' => 'date:Y-m-d',
-        'duration_minutes' => 'integer',
     ];
 
     public function tutor()
     {
-        return $this->belongsTo(User::class, 'tutor_id');
+        return $this->belongsTo(Tutor::class);
     }
 
     public function student()
     {
-        return $this->belongsTo(Student::class, 'student_id');
+        return $this->belongsTo(Student::class);
+    }
+
+    public function lesCategory()
+    {
+        return $this->belongsTo(LesCategory::class, 'les_category_id');
     }
 }

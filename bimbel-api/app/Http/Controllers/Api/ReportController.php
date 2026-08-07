@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Student;
-use App\Models\User;
+use App\Models\Tutor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -16,24 +16,26 @@ class ReportController extends Controller
     // 1. Riwayat Absensi Murid Les
     public function studentHistory(Request $request)
     {
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
 
         if ($request->filled('student_id')) {
             $query->where('student_id', $request->student_id);
         }
 
-        if ($request->filled('jenis_les')) {
-            $query->whereHas('student', function ($q) use ($request) {
-                $q->where('jenis_les', $request->jenis_les);
-            });
+        if ($request->filled('tutor_id')) {
+            $query->where('tutor_id', $request->tutor_id);
+        }
+
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('date', [$request->start_date, $request->end_date]);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -46,7 +48,7 @@ class ReportController extends Controller
 
     public function studentHistoryPdf(Request $request)
     {
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
         $student = null;
 
         if ($request->filled('student_id')) {
@@ -54,14 +56,12 @@ class ReportController extends Controller
             $student = Student::find($request->student_id);
         }
 
-        if ($request->filled('jenis_les')) {
-            $query->whereHas('student', function ($q) use ($request) {
-                $q->where('jenis_les', $request->jenis_les);
-            });
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -76,20 +76,18 @@ class ReportController extends Controller
 
     public function studentHistoryExcel(Request $request)
     {
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
 
         if ($request->filled('student_id')) {
             $query->where('student_id', $request->student_id);
         }
 
-        if ($request->filled('jenis_les')) {
-            $query->whereHas('student', function ($q) use ($request) {
-                $q->where('jenis_les', $request->jenis_les);
-            });
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -103,12 +101,11 @@ class ReportController extends Controller
         $sheet->setCellValue('B1', 'Tanggal');
         $sheet->setCellValue('C1', 'Kode Murid');
         $sheet->setCellValue('D1', 'Nama Murid');
-        $sheet->setCellValue('E1', 'Jenis Les');
+        $sheet->setCellValue('E1', 'Kategori Les');
         $sheet->setCellValue('F1', 'Guru Les');
         $sheet->setCellValue('G1', 'Mata Pelajaran');
         $sheet->setCellValue('H1', 'Durasi (Menit)');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Catatan');
+        $sheet->setCellValue('I1', 'Catatan');
 
         $row = 2;
         foreach ($attendances as $index => $item) {
@@ -116,12 +113,11 @@ class ReportController extends Controller
             $sheet->setCellValue('B' . $row, $item->date);
             $sheet->setCellValue('C' . $row, $item->student->student_code ?? '');
             $sheet->setCellValue('D' . $row, $item->student->name ?? '');
-            $sheet->setCellValue('E' . $row, isset($item->student) ? strtoupper($item->student->jenis_les) : '');
+            $sheet->setCellValue('E' . $row, $item->lesCategory->name ?? '-');
             $sheet->setCellValue('F' . $row, $item->tutor->name ?? '');
-            $sheet->setCellValue('G' . $row, $item->subject);
+            $sheet->setCellValue('G' . $row, $item->subject ?? '-');
             $sheet->setCellValue('H' . $row, $item->duration_minutes);
-            $sheet->setCellValue('I' . $row, strtoupper($item->status));
-            $sheet->setCellValue('J' . $row, $item->notes ?? '');
+            $sheet->setCellValue('I' . $row, $item->notes ?? '-');
             $row++;
         }
 
@@ -136,17 +132,18 @@ class ReportController extends Controller
     // 2. Riwayat Absensi Guru Les
     public function tutorHistory(Request $request)
     {
-        $user = $request->user();
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
 
-        if ($user->role === 'guru') {
-            $query->where('tutor_id', $user->id);
-        } elseif ($request->filled('tutor_id')) {
+        if ($request->filled('tutor_id')) {
             $query->where('tutor_id', $request->tutor_id);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -159,19 +156,20 @@ class ReportController extends Controller
 
     public function tutorHistoryPdf(Request $request)
     {
-        $user = $request->user();
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
         $tutor = null;
 
-        $tutorId = $user->role === 'guru' ? $user->id : $request->tutor_id;
-
-        if ($tutorId) {
-            $query->where('tutor_id', $tutorId);
-            $tutor = User::with('tutorProfile')->find($tutorId);
+        if ($request->filled('tutor_id')) {
+            $query->where('tutor_id', $request->tutor_id);
+            $tutor = Tutor::find($request->tutor_id);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -186,17 +184,18 @@ class ReportController extends Controller
 
     public function tutorHistoryExcel(Request $request)
     {
-        $user = $request->user();
-        $query = Attendance::with(['student', 'tutor']);
+        $query = Attendance::with(['student', 'tutor', 'lesCategory']);
 
-        $tutorId = $user->role === 'guru' ? $user->id : $request->tutor_id;
-
-        if ($tutorId) {
-            $query->where('tutor_id', $tutorId);
+        if ($request->filled('tutor_id')) {
+            $query->where('tutor_id', $request->tutor_id);
         }
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('month')) {
+            $query->whereMonth('date', (int)$request->month);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('date', (int)$request->year);
         }
 
         $attendances = $query->orderBy('date', 'desc')->get();
@@ -210,11 +209,10 @@ class ReportController extends Controller
         $sheet->setCellValue('B1', 'Tanggal');
         $sheet->setCellValue('C1', 'Nama Guru');
         $sheet->setCellValue('D1', 'Nama Murid');
-        $sheet->setCellValue('E1', 'Jenis Les');
+        $sheet->setCellValue('E1', 'Kategori Les');
         $sheet->setCellValue('F1', 'Mata Pelajaran');
         $sheet->setCellValue('G1', 'Durasi (Menit)');
-        $sheet->setCellValue('H1', 'Status');
-        $sheet->setCellValue('I1', 'Materi/Topik');
+        $sheet->setCellValue('H1', 'Catatan');
 
         $row = 2;
         foreach ($attendances as $index => $item) {
@@ -222,11 +220,10 @@ class ReportController extends Controller
             $sheet->setCellValue('B' . $row, $item->date);
             $sheet->setCellValue('C' . $row, $item->tutor->name ?? '');
             $sheet->setCellValue('D' . $row, $item->student->name ?? '');
-            $sheet->setCellValue('E' . $row, isset($item->student) ? strtoupper($item->student->jenis_les) : '');
-            $sheet->setCellValue('F' . $row, $item->subject);
+            $sheet->setCellValue('E' . $row, $item->lesCategory->name ?? '-');
+            $sheet->setCellValue('F' . $row, $item->subject ?? '-');
             $sheet->setCellValue('G' . $row, $item->duration_minutes);
-            $sheet->setCellValue('H' . $row, strtoupper($item->status));
-            $sheet->setCellValue('I' . $row, $item->topic ?? '');
+            $sheet->setCellValue('H' . $row, $item->notes ?? '-');
             $row++;
         }
 

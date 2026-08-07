@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Tutor;
+use App\Models\LesCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -31,7 +34,7 @@ class BimbelApiTest extends TestCase
     public function test_guru_can_login()
     {
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'budi@bimbel.com',
+            'email' => 'guru@bimbel.com',
             'password' => 'password123',
         ]);
 
@@ -40,7 +43,7 @@ class BimbelApiTest extends TestCase
             ->assertJsonPath('data.user.role', 'guru');
     }
 
-    public function test_dashboard_summary_returns_jenis_les_breakdown()
+    public function test_dashboard_summary_returns_category_breakdown()
     {
         $user = User::where('email', 'admin@bimbel.com')->first();
 
@@ -51,8 +54,7 @@ class BimbelApiTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonStructure([
                 'data' => [
-                    'students_by_jenis_les' => ['reguler', 'privat_in_house', 'privat_in_bimbel'],
-                    'students_by_jenis_les_and_duration',
+                    'students_by_jenis_les',
                     'total_active_students',
                     'total_tutors',
                     'attendances_this_month',
@@ -74,7 +76,7 @@ class BimbelApiTest extends TestCase
 
     public function test_guru_cannot_access_database_menu()
     {
-        $guru = User::where('email', 'budi@bimbel.com')->first();
+        $guru = User::where('email', 'guru@bimbel.com')->first();
 
         $response = $this->actingAs($guru, 'sanctum')
             ->getJson('/api/v1/database/students');
@@ -84,17 +86,19 @@ class BimbelApiTest extends TestCase
 
     public function test_guru_can_log_attendance()
     {
-        $guru = User::where('email', 'budi@bimbel.com')->first();
-        $student = \App\Models\Student::first();
+        $guru = User::where('email', 'guru@bimbel.com')->first();
+        $student = Student::first();
+        $tutor = Tutor::first();
+        $category = LesCategory::first();
 
         $response = $this->actingAs($guru, 'sanctum')
             ->postJson('/api/v1/attendances', [
+                'tutor_id' => $tutor->id,
                 'student_id' => $student->id,
+                'les_category_id' => $category->id,
                 'date' => date('Y-m-d'),
-                'duration_minutes' => $student->duration_minutes,
+                'duration_minutes' => 90,
                 'subject' => 'Matematika',
-                'topic' => 'Tes Sesi',
-                'status' => 'hadir',
                 'notes' => 'Catatan tes',
             ]);
 

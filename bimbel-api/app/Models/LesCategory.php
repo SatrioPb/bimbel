@@ -5,25 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Student extends Model
+class LesCategory extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'student_code',
+        'code',
         'name',
-        'parent_name',
-        'parent_phone',
-        'address',
+        'default_duration',
+        'fee_per_session',
     ];
 
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
-    }
-
-    public function invoices()
-    {
-        return $this->hasMany(Invoice::class);
     }
 }
