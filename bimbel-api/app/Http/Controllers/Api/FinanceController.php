@@ -53,19 +53,19 @@ class FinanceController extends Controller
         $month = (int)$request->month;
         $year = (int)$request->year;
 
-        $activeStudents = Student::where('status', 'active')->get();
+        $activeStudents = Student::all();
         $generatedCount = 0;
 
         foreach ($activeStudents as $student) {
-            // Count present attendances for student in this month/year
-            $totalSessions = Attendance::where('student_id', $student->id)
+            // Count attendances for student in this month/year
+            $attendances = Attendance::where('student_id', $student->id)
                 ->whereMonth('date', $month)
                 ->whereYear('date', $year)
-                ->where('status', 'hadir')
-                ->count();
+                ->get();
 
-            $feePerSession = (float)$student->fee_per_session;
-            $totalAmount = $totalSessions * $feePerSession;
+            $totalSessions = $attendances->count();
+            $feePerSession = $totalSessions > 0 ? (float)$attendances->first()->fee_per_session : 0;
+            $totalAmount = (float)$attendances->sum('fee_per_session');
             $discount = 0;
             $finalAmount = max(0, $totalAmount - $discount);
 
