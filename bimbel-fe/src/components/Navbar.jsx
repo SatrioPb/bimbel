@@ -1,66 +1,69 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert, Users, Calendar, Sparkles } from 'lucide-react';
+import { ShieldCheck, UserCheck, Bell, ChevronRight } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
-const Navbar = ({ title, subtitle }) => {
-  const { user, isAdmin } = useAuth();
-  const currentDate = new Date().toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+const Navbar = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const getPageTitle = (pathname) => {
+    switch (pathname) {
+      case '/': return 'Dashboard Summary';
+      case '/absensi': return 'Menu Absensi Mengajar';
+      case '/riwayat': return 'Menu Riwayat Absensi';
+      case '/keuangan': return 'Menu Keuangan & Invoice';
+      case '/database': return 'Menu Database Les';
+      default: return 'Bimbel System';
+    }
+  };
+
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header style={{
-      padding: '1.25rem 2rem',
-      backgroundColor: 'rgba(15, 23, 42, 0.75)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid var(--border-color)',
+      height: '64px',
+      backgroundColor: '#ffffff',
+      borderBottom: '1px solid #e2e8f0',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      padding: '0 2rem',
       position: 'sticky',
       top: 0,
-      zIndex: 10
+      zIndex: 20
     }}>
-      <div>
-        <h1 className="page-title">{title}</h1>
-        {subtitle && <p className="page-subtitle">{subtitle}</p>}
+      {/* Page Title & Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+        <span style={{ color: '#64748b', fontWeight: 500 }}>SIKEL</span>
+        <ChevronRight size={14} color="#94a3b8" />
+        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
+          {getPageTitle(location.pathname)}
+        </h2>
       </div>
 
+      {/* Right User Indicator */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        {/* Date Pill */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.45rem 0.85rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.04)',
-          borderRadius: 'var(--radius-full)',
-          border: '1px solid var(--border-color)',
-          fontSize: '0.8rem',
-          color: 'var(--text-muted)'
-        }}>
-          <Calendar size={14} color="#6366f1" />
-          <span>{currentDate}</span>
-        </div>
+        <span className={`badge ${isAdmin ? 'badge-indigo' : 'badge-emerald'}`}>
+          {isAdmin ? <ShieldCheck size={13} /> : <UserCheck size={13} />}
+          <span>{isAdmin ? 'Admin Mode' : 'Guru Mode'}</span>
+        </span>
 
-        {/* User Level Indicator */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.45rem 0.85rem',
-          backgroundColor: isAdmin ? 'rgba(99, 102, 241, 0.15)' : 'rgba(139, 92, 246, 0.15)',
-          borderRadius: 'var(--radius-full)',
-          border: isAdmin ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(139, 92, 246, 0.3)',
-          fontSize: '0.8rem',
-          fontWeight: 700,
-          color: isAdmin ? '#818cf8' : '#c084fc'
-        }}>
-          {isAdmin ? <ShieldAlert size={14} /> : <Users size={14} />}
-          <span>Level: {isAdmin ? 'Administrator' : 'Guru Les'}</span>
+          height: '24px',
+          width: '1px',
+          backgroundColor: '#e2e8f0'
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
+              {user?.name || 'User'}
+            </p>
+            <p style={{ fontSize: '0.725rem', color: '#64748b' }}>
+              {user?.email || 'user@bimbel.com'}
+            </p>
+          </div>
         </div>
       </div>
     </header>

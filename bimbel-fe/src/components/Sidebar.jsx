@@ -1,111 +1,82 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  LayoutDashboard, 
-  ClipboardCheck, 
-  History, 
-  Wallet, 
-  Database, 
-  GraduationCap, 
-  LogOut, 
-  UserCheck 
-} from 'lucide-react';
+import { LayoutDashboard, ClipboardCheck, History, Wallet, Database, LogOut, GraduationCap, ShieldAlert } from 'lucide-react';
 
 const Sidebar = () => {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const navItems = [
-    {
-      name: 'Homepage',
-      path: '/',
-      icon: LayoutDashboard,
-      roles: ['admin', 'guru'],
-    },
-    {
-      name: 'Menu Absensi',
-      path: '/absensi',
-      icon: ClipboardCheck,
-      roles: ['admin', 'guru'],
-    },
-    {
-      name: 'Menu Riwayat',
-      path: '/riwayat',
-      icon: History,
-      roles: ['admin', 'guru'],
-    },
-    {
-      name: 'Menu Keuangan',
-      path: '/keuangan',
-      icon: Wallet,
-      roles: ['admin'], // Admin only
-    },
-    {
-      name: 'Menu Database',
-      path: '/database',
-      icon: Database,
-      roles: ['admin'], // Admin only
-    },
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/absensi', label: 'Menu Absensi', icon: ClipboardCheck },
+    { path: '/riwayat', label: 'Menu Riwayat', icon: History },
   ];
 
-  const filteredNavItems = navItems.filter(item => item.roles.includes(user?.role));
+  if (isAdmin) {
+    navItems.push(
+      { path: '/keuangan', label: 'Menu Keuangan', icon: Wallet },
+      { path: '/database', label: 'Menu Database', icon: Database }
+    );
+  }
 
   return (
     <aside style={{
       width: '260px',
-      backgroundColor: '#090d16',
-      borderRight: '1px solid var(--border-color)',
+      backgroundColor: '#ffffff',
+      borderRight: '1px solid #e2e8f0',
       display: 'flex',
       flexDirection: 'column',
-      padding: '1.5rem 1rem',
-      flexShrink: 0,
-      minHeight: '100vh',
+      height: '100vh',
+      position: 'sticky',
+      top: 0,
+      zIndex: 30
     }}>
       {/* Brand Header */}
       <div style={{
+        padding: '1.25rem 1.5rem',
+        borderBottom: '1px solid #e2e8f0',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem',
-        padding: '0 0.5rem 1.5rem 0.5rem',
-        borderBottom: '1px solid var(--border-color)',
-        marginBottom: '1.5rem'
+        gap: '0.75rem'
       }}>
         <div style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+          width: '36px',
+          height: '36px',
+          borderRadius: '8px',
+          backgroundColor: '#2563eb',
+          color: '#ffffff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
+          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
         }}>
-          <GraduationCap size={24} color="#ffffff" />
+          <GraduationCap size={22} />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#ffffff', lineHeight: 1.2 }}>
-            BIMBEL <span style={{ color: '#818cf8' }}>LES</span>
+          <h1 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            SIKEL BIMBEL
           </h1>
-          <p style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-            System Management
+          <p style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>
+            Panel Admin Filament
           </p>
         </div>
       </div>
 
       {/* Navigation Links */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+      <div style={{ padding: '1.25rem 1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
         <p style={{
           fontSize: '0.7rem',
           fontWeight: 700,
+          color: '#94a3b8',
           textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          color: 'var(--text-dim)',
-          padding: '0.5rem 0.75rem'
+          letterSpacing: '0.05em',
+          padding: '0 0.5rem 0.4rem 0.5rem'
         }}>
-          NAVIGASI UTAMA
+          Navigation
         </p>
 
-        {filteredNavItems.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -115,72 +86,83 @@ const Sidebar = () => {
               style={({ isActive }) => ({
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.85rem',
-                padding: '0.75rem 0.9rem',
-                borderRadius: '10px',
-                color: isActive ? '#ffffff' : 'var(--text-muted)',
-                backgroundColor: isActive ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-                border: isActive ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.9rem',
+                gap: '0.75rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: isActive ? 600 : 500,
+                color: isActive ? '#2563eb' : '#475569',
+                backgroundColor: isActive ? '#eff6ff' : 'transparent',
                 textDecoration: 'none',
-                transition: 'var(--transition)'
+                transition: 'all 0.15s ease'
               })}
             >
-              <Icon size={19} color={user?.role === 'admin' ? '#818cf8' : '#a78bfa'} />
-              <span>{item.name}</span>
+              {({ isActive }) => (
+                <>
+                  <Icon size={19} color={isActive ? '#2563eb' : '#64748b'} />
+                  <span>{item.label}</span>
+                </>
+              )}
             </NavLink>
           );
         })}
-      </nav>
+      </div>
 
-      {/* User Profile & Logout */}
+      {/* User Info & Logout */}
       <div style={{
-        marginTop: 'auto',
-        paddingTop: '1rem',
-        borderTop: '1px solid var(--border-color)'
+        padding: '1rem 1.25rem',
+        borderTop: '1px solid #e2e8f0',
+        backgroundColor: '#f8fafc',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.75rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.03)',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)',
-          marginBottom: '0.75rem'
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            backgroundColor: isAdmin ? 'rgba(99, 102, 241, 0.25)' : 'rgba(139, 92, 246, 0.25)',
-            border: isAdmin ? '1px solid #6366f1' : '1px solid #8b5cf6',
+            width: '32px',
+            height: '32px',
+            borderRadius: '9999px',
+            backgroundColor: isAdmin ? '#e0e7ff' : '#ecfdf5',
+            color: isAdmin ? '#4338ca' : '#047857',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 'bold',
-            color: '#ffffff'
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            flexShrink: 0
           }}>
-            {user?.name?.charAt(0) || 'U'}
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '0.85rem', fontWeight: '700', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ overflow: 'hidden' }}>
+            <p style={{ fontSize: '0.825rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {user?.name || 'User'}
             </p>
-            <span className={`badge ${isAdmin ? 'badge-indigo' : 'badge-purple'}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.45rem' }}>
-              {isAdmin ? '🛡️ Admin' : '👨‍🏫 Guru Les'}
+
+            <span className={`badge ${isAdmin ? 'badge-indigo' : 'badge-emerald'}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.45rem' }}>
+              {isAdmin ? 'ADMINISTRATOR' : 'GURU LES'}
             </span>
           </div>
         </div>
 
         <button
           onClick={logout}
-          className="btn btn-secondary"
-          style={{ width: '100%', justifyContent: 'center' }}
+          title="Logout"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#94a3b8',
+            cursor: 'pointer',
+            padding: '0.35rem',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.15s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#dc2626'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
         >
-          <LogOut size={16} />
-          <span>Keluar</span>
+          <LogOut size={18} />
         </button>
       </div>
     </aside>

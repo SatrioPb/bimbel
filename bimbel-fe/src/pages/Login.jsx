@@ -1,93 +1,105 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, Lock, Mail, ShieldCheck, UserCheck, ArrowRight } from 'lucide-react';
+import { GraduationCap, Lock, Mail, Shield, UserCheck, AlertCircle } from 'lucide-react';
 
 const Login = () => {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useAuth();
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(email, password);
-    if (result.success) {
-      navigate('/');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await login(email, password);
+      if (!res.success) {
+        setError(res.message || 'Login gagal. Periksa kembali email dan password.');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat menghubungi server.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleQuickLogin = (quickEmail, quickPassword) => {
-    setEmail(quickEmail);
-    setPassword(quickPassword);
+  const handleQuickLogin = (roleEmail) => {
+    setEmail(roleEmail);
+    setPassword('password123');
   };
 
   return (
     <div style={{
       minHeight: '100vh',
+      backgroundColor: '#f8fafc',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '1.5rem',
-      backgroundColor: '#0f172a'
+      padding: '1.5rem'
     }}>
-      <div className="glass-card" style={{
+      <div style={{
         width: '100%',
         maxWidth: '440px',
-        padding: '2.5rem 2rem',
-        backgroundColor: 'rgba(30, 41, 59, 0.85)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+        backgroundColor: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '16px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
+        padding: '2.25rem'
       }}>
-        {/* Brand Header */}
+        {/* Logo & Title */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '18px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            backgroundColor: '#2563eb',
+            color: '#ffffff',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.45)',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            boxShadow: '0 2px 4px 0 rgba(37, 99, 235, 0.2)'
           }}>
-            <GraduationCap size={32} color="#ffffff" />
+            <GraduationCap size={28} />
           </div>
-          <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ffffff' }}>
-            Bimbel <span style={{ color: '#818cf8' }}>Les System</span>
-          </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            Silakan masuk dengan akun Admin atau Guru Les
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+            SIKEL BIMBEL
+          </h1>
+          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
+            Silakan masuk untuk mengakses panel informasi les
           </p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <div style={{
             padding: '0.75rem 1rem',
-            backgroundColor: 'rgba(244, 63, 94, 0.15)',
-            border: '1px solid rgba(244, 63, 94, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            color: '#fb7185',
-            fontSize: '0.85rem',
-            marginBottom: '1.5rem',
-            textAlign: 'center'
+            backgroundColor: '#fff1f2',
+            border: '1px solid #fecdd3',
+            borderRadius: '8px',
+            color: '#be123c',
+            fontSize: '0.825rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}>
-            {error}
+            <AlertCircle size={16} flexShrink={0} />
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Alamat Email</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Mail size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="email"
                 className="form-input"
-                style={{ paddingLeft: '2.5rem' }}
+                style={{ paddingLeft: '2.4rem' }}
                 placeholder="nama@bimbel.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -97,13 +109,13 @@ const Login = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label className="form-label">Password</label>
+            <label className="form-label">Password Account</label>
             <div style={{ position: 'relative' }}>
-              <Lock size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Lock size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="password"
                 className="form-input"
-                style={{ paddingLeft: '2.5rem' }}
+                style={{ paddingLeft: '2.4rem' }}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -115,41 +127,36 @@ const Login = () => {
           <button
             type="submit"
             className="btn btn-primary"
+            style={{ width: '100%', padding: '0.7rem', fontSize: '0.9rem', marginBottom: '1.75rem' }}
             disabled={loading}
-            style={{ width: '100%', padding: '0.8rem', fontSize: '0.95rem' }}
           >
-            {loading ? 'Memproses Login...' : 'Masuk ke Aplikasi'}
-            {!loading && <ArrowRight size={18} />}
+            {loading ? 'Memproses Authentikasi...' : 'Masuk ke Dashboard'}
           </button>
         </form>
 
-        {/* Quick Test Login Accounts */}
-        <div style={{
-          marginTop: '2rem',
-          paddingTop: '1.25rem',
-          borderTop: '1px solid var(--border-color)',
-          textAlign: 'center'
-        }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.75rem', fontWeight: 600 }}>
-            ⚡ AKSES CEPAT (DEMO AKUN)
+        {/* Quick Login Helper Buttons */}
+        <div style={{ paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.75rem' }}>
+            Pilih Akses Cepat Login
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+          <div className="grid-2">
             <button
               type="button"
-              onClick={() => handleQuickLogin('admin@bimbel.com', 'password123')}
+              onClick={() => handleQuickLogin('admin@bimbel.com')}
               className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.75rem', justifyContent: 'center' }}
+              style={{ justifyContent: 'center' }}
             >
-              <ShieldCheck size={14} color="#818cf8" />
+              <Shield size={14} color="#2563eb" />
               <span>Login Admin</span>
             </button>
+
             <button
               type="button"
-              onClick={() => handleQuickLogin('budi@bimbel.com', 'password123')}
+              onClick={() => handleQuickLogin('guru@bimbel.com')}
               className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.75rem', justifyContent: 'center' }}
+              style={{ justifyContent: 'center' }}
             >
-              <UserCheck size={14} color="#a78bfa" />
+              <UserCheck size={14} color="#059669" />
               <span>Login Guru</span>
             </button>
           </div>

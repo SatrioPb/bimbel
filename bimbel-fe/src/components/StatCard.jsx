@@ -1,38 +1,58 @@
 import React from 'react';
 
-const StatCard = ({ title, value, icon: Icon, color = 'indigo', subtext }) => {
-  const colorMap = {
-    indigo: { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8', border: 'rgba(99, 102, 241, 0.3)' },
-    emerald: { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
-    amber: { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
-    purple: { bg: 'rgba(139, 92, 246, 0.15)', text: '#c084fc', border: 'rgba(139, 92, 246, 0.3)' },
-    rose: { bg: 'rgba(244, 63, 94, 0.15)', text: '#fb7185', border: 'rgba(244, 63, 94, 0.3)' },
+const StatCard = ({ title, value, icon: Icon, subtext, color = 'indigo' }) => {
+  const getColorStyles = () => {
+    switch (color) {
+      case 'emerald':
+        return { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0' };
+      case 'amber':
+        return { bg: '#fffbe6', text: '#b45309', border: '#fef08a' };
+      case 'rose':
+        return { bg: '#fff1f2', text: '#be123c', border: '#fecdd3' };
+      case 'purple':
+        return { bg: '#f5f3ff', text: '#6d28d9', border: '#ddd6fe' };
+      case 'indigo':
+      default:
+        return { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' };
+    }
   };
 
-  const scheme = colorMap[color] || colorMap.indigo;
+  const style = getColorStyles();
 
   return (
-    <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-      <div style={{
-        width: '54px',
-        height: '54px',
-        borderRadius: '16px',
-        backgroundColor: scheme.bg,
-        border: `1px solid ${scheme.border}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0
-      }}>
-        {Icon && <Icon size={26} color={scheme.text} />}
+    <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
+            {title}
+          </p>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+            {value}
+          </h3>
+        </div>
+
+        {Icon && (
+          <div style={{
+            padding: '0.65rem',
+            borderRadius: '10px',
+            backgroundColor: style.bg,
+            color: style.text,
+            border: `1px solid ${style.border}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Icon size={22} />
+          </div>
+        )}
       </div>
-      <div>
-        <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 600 }}>{title}</p>
-        <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.2, margin: '0.15rem 0' }}>
-          {value}
-        </h2>
-        {subtext && <p style={{ fontSize: '0.725rem', color: 'var(--text-dim)' }}>{subtext}</p>}
-      </div>
+
+      {subtext && (
+        <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid #f1f5f9', fontSize: '0.775rem', color: '#64748b' }}>
+          {subtext}
+        </div>
+      )}
     </div>
   );
 };
