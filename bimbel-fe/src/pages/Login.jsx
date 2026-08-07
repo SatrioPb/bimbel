@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GraduationCap, Lock, Mail, Shield, UserCheck, AlertCircle } from 'lucide-react';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +25,9 @@ const Login = () => {
 
     try {
       const res = await login(email, password);
-      if (!res.success) {
+      if (res.success) {
+        navigate('/', { replace: true });
+      } else {
         setError(res.message || 'Login gagal. Periksa kembali email dan password.');
       }
     } catch (err) {
@@ -26,9 +37,24 @@ const Login = () => {
     }
   };
 
-  const handleQuickLogin = (roleEmail) => {
+  const handleQuickLogin = async (roleEmail) => {
     setEmail(roleEmail);
     setPassword('password123');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await login(roleEmail, 'password123');
+      if (res.success) {
+        navigate('/', { replace: true });
+      } else {
+        setError(res.message || 'Login gagal. Periksa kembali email dan password.');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat menghubungi server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,6 +171,7 @@ const Login = () => {
               onClick={() => handleQuickLogin('admin@bimbel.com')}
               className="btn btn-secondary btn-sm"
               style={{ justifyContent: 'center' }}
+              disabled={loading}
             >
               <Shield size={14} color="#2563eb" />
               <span>Login Admin</span>
@@ -155,6 +182,7 @@ const Login = () => {
               onClick={() => handleQuickLogin('guru@bimbel.com')}
               className="btn btn-secondary btn-sm"
               style={{ justifyContent: 'center' }}
+              disabled={loading}
             >
               <UserCheck size={14} color="#059669" />
               <span>Login Guru</span>
