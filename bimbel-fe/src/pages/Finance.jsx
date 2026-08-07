@@ -139,10 +139,10 @@ const Finance = () => {
       <div className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge badge-amber" style={{ marginBottom: '0.4rem' }}>💰 Administrator Only</span>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
             Menu Keuangan & Invoice Les
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
             Kelola tagihan les bulanan wali murid dan pantau total pemasukan bimbel
           </p>
         </div>
@@ -152,7 +152,7 @@ const Finance = () => {
             <Plus size={18} />
             <span>Generate Invoice Bulan Ini</span>
           </button>
-          <button onClick={() => handleExportIncome('pdf')} className="btn btn-secondary" style={{ borderColor: 'rgba(244, 63, 94, 0.4)', color: '#fb7185' }}>
+          <button onClick={() => handleExportIncome('pdf')} className="btn btn-secondary" style={{ borderColor: '#fecdd3', color: '#be123c' }}>
             <FileText size={18} />
             <span>Rekap PDF</span>
           </button>
@@ -167,10 +167,11 @@ const Finance = () => {
         <div style={{
           padding: '0.75rem 1rem',
           borderRadius: 'var(--radius-md)',
-          backgroundColor: message.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-          border: message.type === 'success' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)',
-          color: message.type === 'success' ? '#34d399' : '#fb7185',
-          fontSize: '0.85rem'
+          backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fff1f2',
+          border: message.type === 'success' ? '1px solid #a7f3d0' : '1px solid #fecdd3',
+          color: message.type === 'success' ? '#047857' : '#be123c',
+          fontSize: '0.85rem',
+          fontWeight: 500
         }}>
           {message.text}
         </div>
@@ -204,14 +205,14 @@ const Finance = () => {
       {/* Table Invoices */}
       <div className="glass-card">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
             📑 Daftar Invoice Les per Wali Murid ({filteredInvoices.length})
           </h3>
 
           {/* Filters */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', width: '220px' }}>
-              <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
                 className="form-input"
@@ -236,9 +237,9 @@ const Finance = () => {
         </div>
 
         {loading ? (
-          <p style={{ color: 'var(--text-muted)' }}>Memuat daftar invoice...</p>
+          <p style={{ color: '#64748b' }}>Memuat daftar invoice...</p>
         ) : filteredInvoices.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Tidak ada invoice les yang sesuai dengan filter.</p>
+          <p style={{ color: '#64748b' }}>Tidak ada invoice les yang sesuai dengan filter.</p>
         ) : (
           <div className="table-container">
             <table className="custom-table">
@@ -262,13 +263,13 @@ const Finance = () => {
 
                   return (
                     <tr key={inv.id}>
-                      <td style={{ fontWeight: 700, color: '#818cf8' }}>{inv.invoice_number}</td>
-                      <td style={{ fontWeight: 600 }}>{inv.student?.name || inv.student_id}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{inv.student?.parent_name || '-'}</td>
+                      <td style={{ fontWeight: 700, color: '#2563eb' }}>{inv.invoice_number}</td>
+                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{inv.student?.name || inv.student_id}</td>
+                      <td style={{ color: '#64748b' }}>{inv.student?.parent_name || '-'}</td>
                       <td>Bulan {inv.month} / {inv.year}</td>
                       <td>{inv.total_sessions} Sesi</td>
                       <td>Rp {fee.toLocaleString('id-ID')}</td>
-                      <td style={{ fontWeight: 800, color: '#ffffff' }}>
+                      <td style={{ fontWeight: 800, color: '#0f172a' }}>
                         Rp {finalAmt.toLocaleString('id-ID')}
                       </td>
                       <td>
@@ -292,7 +293,7 @@ const Finance = () => {
                             className="btn btn-secondary btn-sm"
                             title="Download PDF Invoice"
                           >
-                            <FileText size={14} color="#fb7185" />
+                            <FileText size={14} color="#be123c" />
                             <span>PDF</span>
                           </button>
                         </div>

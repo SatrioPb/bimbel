@@ -30,7 +30,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <div style={{ padding: '3rem 2rem', textAlign: 'center', color: '#64748b' }}>
         <p style={{ fontSize: '1rem', fontWeight: 600 }}>🔄 Memuat rangkuman data bimbel...</p>
       </div>
     );
@@ -45,10 +45,10 @@ const Dashboard = () => {
       {errorMsg && (
         <div style={{
           padding: '1rem 1.25rem',
-          backgroundColor: 'rgba(244, 63, 94, 0.15)',
-          border: '1px solid rgba(244, 63, 94, 0.3)',
+          backgroundColor: '#fff1f2',
+          border: '1px solid #fecdd3',
           borderRadius: 'var(--radius-md)',
-          color: '#fb7185',
+          color: '#be123c',
           fontSize: '0.9rem',
           display: 'flex',
           alignItems: 'center',
@@ -64,8 +64,8 @@ const Dashboard = () => {
 
       {/* Welcome Banner */}
       <div className="glass-card" style={{
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.3)',
+        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+        border: '1px solid #bfdbfe',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -75,10 +75,10 @@ const Dashboard = () => {
           <span className="badge badge-indigo" style={{ marginBottom: '0.5rem' }}>
             <Sparkles size={13} /> SIKEL (Sistem Informasi Les & Bimbel)
           </span>
-          <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff' }}>
+          <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#1e40af' }}>
             Selamat Datang di Dashboard Bimbel
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          <p style={{ color: '#334155', fontSize: '0.9rem', marginTop: '0.25rem', fontWeight: 500 }}>
             Pantau rangkuman jumlah murid, absensi mengajar guru, dan keuangan les secara real-time.
           </p>
         </div>
@@ -120,10 +120,10 @@ const Dashboard = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
               📚 Rangkuman Sesi Les per Kategori
             </h3>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.825rem', color: '#64748b' }}>
               Pembagian aktivitas bimbingan belajar berdasarkan Kategori Les (REG, PIH, PIB)
             </p>
           </div>
@@ -132,17 +132,17 @@ const Dashboard = () => {
         <div className="grid-3">
           {/* Card 1: Reguler (REG) */}
           <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: 'rgba(99, 102, 241, 0.2)', border: '1px solid rgba(99, 102, 241, 0.4)' }}>
-                  <BookOpen size={20} color="#818cf8" />
+                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                  <BookOpen size={20} color="#2563eb" />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Les Reguler</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Les Reguler</h4>
                   <span className="badge badge-indigo">Kode: REG (90 mnt)</span>
                 </div>
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563eb' }}>
                 {studentsByJenis.REG || 0} Sesi
               </span>
             </div>
@@ -150,17 +150,17 @@ const Dashboard = () => {
 
           {/* Card 2: Privat In House (PIH) */}
           <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.4)' }}>
-                  <Clock size={20} color="#c084fc" />
+                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#f5f3ff', border: '1px solid #ddd6fe' }}>
+                  <Clock size={20} color="#7c3aed" />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Privat In House</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In House</h4>
                   <span className="badge badge-purple">Kode: PIH (90 mnt)</span>
                 </div>
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#c084fc' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#7c3aed' }}>
                 {studentsByJenis.PIH || 0} Sesi
               </span>
             </div>
@@ -168,17 +168,17 @@ const Dashboard = () => {
 
           {/* Card 3: Privat In Bimbel (PIB) */}
           <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
-                  <Clock size={20} color="#34d399" />
+                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+                  <Clock size={20} color="#059669" />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>Privat In Bimbel</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In Bimbel</h4>
                   <span className="badge badge-emerald">Kode: PIB (60 mnt)</span>
                 </div>
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#059669' }}>
                 {studentsByJenis.PIB || 0} Sesi
               </span>
             </div>

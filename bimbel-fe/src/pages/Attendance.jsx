@@ -104,10 +104,11 @@ const Attendance = () => {
         <div style={{
           padding: '0.75rem 1rem',
           borderRadius: 'var(--radius-md)',
-          backgroundColor: message.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-          border: message.type === 'success' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)',
-          color: message.type === 'success' ? '#34d399' : '#fb7185',
-          fontSize: '0.85rem'
+          backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fff1f2',
+          border: message.type === 'success' ? '1px solid #a7f3d0' : '1px solid #fecdd3',
+          color: message.type === 'success' ? '#047857' : '#be123c',
+          fontSize: '0.85rem',
+          fontWeight: 500
         }}>
           {message.text}
         </div>
@@ -118,10 +119,10 @@ const Attendance = () => {
         {/* Table Header with "+ Tambah Presensi" Button on Top Right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>
               📋 Daftar Presensi Sesi Les Mengajar
             </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
               Rekapitulasi absensi sesi bimbingan belajar murid & guru les
             </p>
           </div>
@@ -134,9 +135,9 @@ const Attendance = () => {
 
         {/* Attendance Table */}
         {loading ? (
-          <p style={{ color: 'var(--text-muted)' }}>Memuat data presensi...</p>
+          <p style={{ color: '#64748b' }}>Memuat data presensi...</p>
         ) : attendances.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Belum ada data presensi yang dicatat.</p>
+          <p style={{ color: '#64748b' }}>Belum ada data presensi yang dicatat.</p>
         ) : (
           <div className="table-container">
             <table className="custom-table">
@@ -154,9 +155,9 @@ const Attendance = () => {
               <tbody>
                 {attendances.map((att) => (
                   <tr key={att.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{att.date}</td>
-                    <td style={{ fontWeight: 600, color: '#c084fc' }}>{att.tutor?.name || '-'}</td>
-                    <td style={{ color: '#818cf8', fontWeight: 600 }}>{att.student?.name || '-'}</td>
+                    <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
+                    <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
+                    <td style={{ color: '#2563eb', fontWeight: 600 }}>{att.student?.name || '-'}</td>
                     <td>
                       <span className="badge badge-indigo">
                         {att.les_category?.name || att.lesCategory?.name || 'Les'}
@@ -164,7 +165,7 @@ const Attendance = () => {
                     </td>
                     <td>{att.subject || '-'}</td>
                     <td>{att.duration_minutes} Menit</td>
-                    <td style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{att.notes || '-'}</td>
+                    <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>

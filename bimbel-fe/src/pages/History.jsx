@@ -94,16 +94,16 @@ const History = () => {
       <div className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge badge-indigo" style={{ marginBottom: '0.4rem' }}>📊 Export & Report</span>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
             Menu Riwayat Absensi Les
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
             Pantau riwayat jam mengajar guru les dan kehadiran murid les dengan filter bulan
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: 'rgba(244, 63, 94, 0.4)', color: '#fb7185' }}>
+          <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: '#fecdd3', color: '#be123c' }}>
             <FileText size={18} />
             <span>Export PDF</span>
           </button>
@@ -193,9 +193,9 @@ const History = () => {
 
         {/* Table Content */}
         {loading ? (
-          <p style={{ color: 'var(--text-muted)' }}>Memuat riwayat absensi...</p>
+          <p style={{ color: '#64748b' }}>Memuat riwayat absensi...</p>
         ) : attendances.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Tidak ada data riwayat absensi yang ditemukan.</p>
+          <p style={{ color: '#64748b' }}>Tidak ada data riwayat absensi yang ditemukan.</p>
         ) : (
           <div className="table-container">
             <table className="custom-table">
@@ -213,9 +213,9 @@ const History = () => {
               <tbody>
                 {attendances.map((att) => (
                   <tr key={att.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{att.date}</td>
-                    <td style={{ fontWeight: 600, color: '#c084fc' }}>{att.tutor?.name || '-'}</td>
-                    <td style={{ fontWeight: 600, color: '#818cf8' }}>{att.student?.name || '-'}</td>
+                    <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
+                    <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
+                    <td style={{ fontWeight: 600, color: '#2563eb' }}>{att.student?.name || '-'}</td>
                     <td>
                       <span className="badge badge-indigo">
                         {att.les_category?.name || att.lesCategory?.name || 'Les'}
@@ -223,7 +223,7 @@ const History = () => {
                     </td>
                     <td>{att.subject || '-'}</td>
                     <td>{att.duration_minutes} Menit</td>
-                    <td style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{att.notes || '-'}</td>
+                    <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>

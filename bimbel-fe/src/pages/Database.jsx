@@ -198,10 +198,10 @@ const Database = () => {
       <div className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge badge-amber" style={{ marginBottom: '0.4rem' }}>🛡️ Admin Only</span>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
             Menu Database Les
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
             Kelola data Murid Les, Data Guru Les, serta Kategori Tipe Les (PIB, PIH, Reguler)
           </p>
         </div>
@@ -218,7 +218,7 @@ const Database = () => {
               <span>Tambah Guru Baru</span>
             </button>
           ) : (
-            <button onClick={() => handleOpenCatModal()} className="btn btn-secondary" style={{ borderColor: '#818cf8', color: '#818cf8' }}>
+            <button onClick={() => handleOpenCatModal()} className="btn btn-secondary" style={{ borderColor: '#2563eb', color: '#2563eb' }}>
               <Plus size={18} />
               <span>Tambah Kategori Tipe Les</span>
             </button>
@@ -251,7 +251,7 @@ const Database = () => {
         </div>
 
         {loading ? (
-          <p style={{ color: 'var(--text-muted)' }}>Memuat data database...</p>
+          <p style={{ color: '#64748b' }}>Memuat data database...</p>
         ) : activeTab === 'students' ? (
           /* Table Murid */
           <div className="table-container">
@@ -269,15 +269,15 @@ const Database = () => {
               <tbody>
                 {students.map((s) => (
                   <tr key={s.id}>
-                    <td style={{ fontWeight: 700, color: '#818cf8' }}>{s.student_code}</td>
-                    <td style={{ fontWeight: 600 }}>{s.name}</td>
+                    <td style={{ fontWeight: 700, color: '#2563eb' }}>{s.student_code}</td>
+                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{s.name}</td>
                     <td>{s.parent_name}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{s.parent_phone}</td>
+                    <td style={{ color: '#64748b' }}>{s.parent_phone}</td>
                     <td>{s.address || '-'}</td>
                     <td style={{ textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                         <button onClick={() => handleOpenStudentModal(s)} className="btn btn-secondary btn-sm">
-                          <Edit2 size={14} color="#818cf8" />
+                          <Edit2 size={14} color="#2563eb" />
                           <span>Edit</span>
                         </button>
                         <button onClick={() => handleDelete(s.id, 'students')} className="btn btn-danger btn-sm">
@@ -309,17 +309,17 @@ const Database = () => {
                   const rate = parseFloat(t.rate_per_session || 0);
                   return (
                     <tr key={t.id}>
-                      <td style={{ fontWeight: 700, color: '#c084fc' }}>{t.nip_code}</td>
-                      <td style={{ fontWeight: 600 }}>{t.name}</td>
+                      <td style={{ fontWeight: 700, color: '#7c3aed' }}>{t.nip_code}</td>
+                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{t.name}</td>
                       <td>{t.phone || '-'}</td>
                       <td>{t.specialization || '-'}</td>
-                      <td style={{ fontWeight: 700, color: '#34d399' }}>
+                      <td style={{ fontWeight: 700, color: '#059669' }}>
                         Rp {rate.toLocaleString('id-ID')}
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                           <button onClick={() => handleOpenTutorModal(t)} className="btn btn-secondary btn-sm">
-                            <Edit2 size={14} color="#c084fc" />
+                            <Edit2 size={14} color="#7c3aed" />
                             <span>Edit</span>
                           </button>
                           <button onClick={() => handleDelete(t.id, 'tutors')} className="btn btn-danger btn-sm">
@@ -351,18 +351,18 @@ const Database = () => {
                   const fee = parseFloat(c.fee_per_session || 0);
                   return (
                     <tr key={c.id}>
-                      <td style={{ fontWeight: 700, color: '#818cf8' }}>
+                      <td style={{ fontWeight: 700, color: '#2563eb' }}>
                         <span className="badge badge-indigo">{c.code}</span>
                       </td>
-                      <td style={{ fontWeight: 600 }}>{c.name}</td>
+                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{c.name}</td>
                       <td>{c.default_duration} Menit</td>
-                      <td style={{ fontWeight: 700, color: '#34d399' }}>
+                      <td style={{ fontWeight: 700, color: '#059669' }}>
                         Rp {fee.toLocaleString('id-ID')}
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                           <button onClick={() => handleOpenCatModal(c)} className="btn btn-secondary btn-sm">
-                            <Edit2 size={14} color="#818cf8" />
+                            <Edit2 size={14} color="#2563eb" />
                             <span>Edit</span>
                           </button>
                           <button onClick={() => handleDelete(c.id, 'les-categories')} className="btn btn-danger btn-sm">
