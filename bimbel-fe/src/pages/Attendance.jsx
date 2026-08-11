@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { ClipboardCheck, Plus, Calendar, Clock, User, BookOpen, AlertCircle } from 'lucide-react';
+import { ClipboardCheck, Plus, Calendar, Clock, User, BookOpen, AlertCircle, Tag, CheckCircle2 } from 'lucide-react';
 
 const Attendance = () => {
   const [attendances, setAttendances] = useState([]);
@@ -52,6 +52,17 @@ const Attendance = () => {
     }
   };
 
+  const calculateFixedFee = (categoryId, durationMinutes) => {
+    const selected = categories.find(c => c.id === parseInt(categoryId));
+    const code = selected ? selected.code.toUpperCase() : '';
+    const dur = parseInt(durationMinutes) || 90;
+
+    if (code === 'PIH') return dur === 60 ? 25000 : 30000;
+    if (code === 'PIB') return dur === 60 ? 20000 : 25000;
+    if (code === 'REG') return 15000;
+    return 15000;
+  };
+
   const handleCategorySelect = (categoryId) => {
     const selected = categories.find(c => c.id === parseInt(categoryId));
     setFormData(prev => ({
@@ -62,14 +73,15 @@ const Attendance = () => {
   };
 
   const handleOpenModal = () => {
+    const defaultCat = categories.length > 0 ? categories[0] : null;
     setFormData({
       tutor_id: tutors.length > 0 ? tutors[0].id : '',
       student_id: students.length > 0 ? students[0].id : '',
-      les_category_id: categories.length > 0 ? categories[0].id : '',
+      les_category_id: defaultCat ? defaultCat.id : '',
       date: new Date().toISOString().split('T')[0],
       start_time: '15:00',
       end_time: '16:30',
-      duration_minutes: categories.length > 0 ? categories[0].default_duration : 90,
+      duration_minutes: defaultCat ? defaultCat.default_duration : 90,
       subject: '',
       notes: ''
     });
@@ -97,6 +109,8 @@ const Attendance = () => {
       setSubmitting(false);
     }
   };
+
+  const currentCalculatedFee = calculateFixedFee(formData.les_category_id, formData.duration_minutes);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -149,25 +163,32 @@ const Attendance = () => {
                   <th>Kategori Les</th>
                   <th>Mata Pelajaran</th>
                   <th>Durasi</th>
+                  <th>Tarif Sesi (Fix)</th>
                   <th>Catatan</th>
                 </tr>
               </thead>
               <tbody>
-                {attendances.map((att) => (
-                  <tr key={att.id}>
-                    <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
-                    <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
-                    <td style={{ color: '#2563eb', fontWeight: 600 }}>{att.student?.name || '-'}</td>
-                    <td>
-                      <span className="badge badge-indigo">
-                        {att.les_category?.name || att.lesCategory?.name || 'Les'}
-                      </span>
-                    </td>
-                    <td>{att.subject || '-'}</td>
-                    <td>{att.duration_minutes} Menit</td>
-                    <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
-                  </tr>
-                ))}
+                {attendances.map((att) => {
+                  const fee = parseFloat(att.fee_per_session || 0);
+                  return (
+                    <tr key={att.id}>
+                      <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
+                      <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
+                      <td style={{ color: '#2563eb', fontWeight: 600 }}>{att.student?.name || '-'}</td>
+                      <td>
+                        <span className="badge badge-indigo">
+                          {att.les_category?.name || att.lesCategory?.name || 'Les'}
+                        </span>
+                      </td>
+                      <td>{att.subject || '-'}</td>
+                      <td>{att.duration_minutes} Menit</td>
+                      <td style={{ fontWeight: 700, color: '#059669' }}>
+                        Rp {fee.toLocaleString('id-ID')}
+                      </td>
+                      <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -228,7 +249,7 @@ const Attendance = () => {
                 <option value="">-- Pilih Kategori --</option>
                 {categories.map(c => (
                   <option key={c.id} value={c.id}>
-                    [{c.code}] {c.name} (Rp {parseFloat(c.fee_per_session).toLocaleString('id-ID')})
+                    [{c.code}] {c.name}
                   </option>
                 ))}
               </select>
@@ -246,6 +267,27 @@ const Attendance = () => {
                 <option value={90}>90 Menit</option>
               </select>
             </div>
+          </div>
+
+          {/* Fixed Price Badge Notice */}
+          <div style={{
+            margin: '0.5rem 0 1rem 0',
+            padding: '0.65rem 0.85rem',
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.825rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1d4ed8' }}>
+              <Tag size={16} />
+              <span>Tarif Biaya Sesi (Locked Fix Rate):</span>
+            </div>
+            <strong style={{ fontSize: '0.95rem', color: '#059669' }}>
+              Rp {currentCalculatedFee.toLocaleString('id-ID')} / Sesi
+            </strong>
           </div>
 
           <div className="grid-2">

@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // Also keep legacy demo email budi@bimbel.com for smooth backward compatibility
+        // Demo email for compatibility
         User::create([
             'name' => 'Guru Bimbel (Demo)',
             'email' => 'budi@bimbel.com',
@@ -45,35 +45,38 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // 3. Kategori Tipe Les (Les Categories)
+        // 3. Kategori Tipe Les (Les Categories with Fixed Pricing)
+        // Reguler: 15.000
         $catReg = LesCategory::create([
             'code' => 'REG',
             'name' => 'Les Reguler',
             'default_duration' => 90,
-            'fee_per_session' => 75000,
+            'fee_per_session' => 15000,
         ]);
 
+        // Privat In House: 90m = 30.000, 60m = 25.000
         $catPih = LesCategory::create([
             'code' => 'PIH',
             'name' => 'Privat In House',
             'default_duration' => 90,
-            'fee_per_session' => 150000,
+            'fee_per_session' => 30000,
         ]);
 
+        // Privat In Bimbel: 90m = 25.000, 60m = 20.000
         $catPib = LesCategory::create([
             'code' => 'PIB',
             'name' => 'Privat In Bimbel',
             'default_duration' => 60,
-            'fee_per_session' => 90000,
+            'fee_per_session' => 20000,
         ]);
 
-        // 4. Data Guru Les (Tutor Profiles)
+        // 4. Data Guru Les (Fixed Honor: 15.000 per pertemuan per anak)
         $tutor1 = Tutor::create([
             'nip_code' => 'G2026001',
             'name' => 'Budi Santoso, S.Pd',
             'phone' => '081299990001',
             'specialization' => 'Matematika & IPA',
-            'rate_per_session' => 100000,
+            'rate_per_session' => 15000,
         ]);
 
         $tutor2 = Tutor::create([
@@ -81,7 +84,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Siti Aminah, M.Pd',
             'phone' => '081299990002',
             'specialization' => 'Bahasa Inggris',
-            'rate_per_session' => 120000,
+            'rate_per_session' => 15000,
         ]);
 
         // 5. Data Murid Les (Students)
@@ -127,7 +130,7 @@ class DatabaseSeeder extends Seeder
             'end_time' => '16:30',
             'duration_minutes' => 90,
             'subject' => 'Matematika',
-            'fee_per_session' => $catReg->fee_per_session,
+            'fee_per_session' => 15000,
             'notes' => 'Murid paham materi dengan baik.',
         ]);
 
@@ -140,7 +143,7 @@ class DatabaseSeeder extends Seeder
             'end_time' => '17:30',
             'duration_minutes' => 90,
             'subject' => 'Fisika',
-            'fee_per_session' => $catPih->fee_per_session,
+            'fee_per_session' => 30000, // PIH 90m = 30.000
             'notes' => 'Tatap muka di rumah murid.',
         ]);
 
@@ -153,7 +156,7 @@ class DatabaseSeeder extends Seeder
             'end_time' => '15:00',
             'duration_minutes' => 60,
             'subject' => 'Bahasa Inggris',
-            'fee_per_session' => $catPib->fee_per_session,
+            'fee_per_session' => 20000, // PIB 60m = 20.000
             'notes' => 'Latihan percakapan lancar.',
         ]);
 
@@ -167,10 +170,10 @@ class DatabaseSeeder extends Seeder
             'month' => $currentMonth,
             'year' => $currentYear,
             'total_sessions' => 4,
-            'fee_per_session' => 75000,
-            'total_amount' => 300000,
+            'fee_per_session' => 15000,
+            'total_amount' => 60000,
             'discount' => 0,
-            'final_amount' => 300000,
+            'final_amount' => 60000,
             'status' => 'paid',
             'paid_at' => now(),
             'notes' => 'Lunas via Transfer Bank',

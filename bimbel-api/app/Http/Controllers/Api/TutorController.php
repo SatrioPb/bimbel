@@ -35,7 +35,7 @@ class TutorController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'specialization' => 'nullable|string|max:255',
-            'rate_per_session' => 'required|numeric|min:0',
+            'rate_per_session' => 'nullable|numeric|min:0',
         ]);
 
         $latestTutorId = Tutor::max('id') + 1;
@@ -46,7 +46,7 @@ class TutorController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'specialization' => $request->specialization,
-            'rate_per_session' => $request->rate_per_session,
+            'rate_per_session' => 15000, // Fixed Gaji Guru Les: 15.000 per pertemuan per anak
         ]);
 
         return response()->json([

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen } from 'lucide-react';
+import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert } from 'lucide-react';
 
 const Database = () => {
   const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories'
@@ -29,7 +29,7 @@ const Database = () => {
     phone: '',
     nip_code: '',
     specialization: '',
-    rate_per_session: 100000
+    rate_per_session: 15000
   });
 
   // Category Form Modal State
@@ -39,7 +39,7 @@ const Database = () => {
     code: '',
     name: '',
     default_duration: 90,
-    fee_per_session: 75000
+    fee_per_session: 15000
   });
 
   useEffect(() => {
@@ -114,7 +114,7 @@ const Database = () => {
         phone: tutor.phone || '',
         nip_code: tutor.nip_code || '',
         specialization: tutor.specialization || '',
-        rate_per_session: tutor.rate_per_session || 100000
+        rate_per_session: 15000
       });
     } else {
       setEditingTutor(null);
@@ -123,7 +123,7 @@ const Database = () => {
         phone: '',
         nip_code: `G${new Date().getFullYear()}${Math.floor(100 + Math.random() * 900)}`,
         specialization: '',
-        rate_per_session: 100000
+        rate_per_session: 15000
       });
     }
     setShowTutorModal(true);
@@ -160,7 +160,7 @@ const Database = () => {
         code: '',
         name: '',
         default_duration: 90,
-        fee_per_session: 75000
+        fee_per_session: 15000
       });
     }
     setShowCatModal(true);
@@ -202,7 +202,7 @@ const Database = () => {
             Menu Database Les
           </h2>
           <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Kelola data Murid Les, Data Guru Les, serta Kategori Tipe Les (PIB, PIH, Reguler)
+            Kelola data Murid Les, Data Profil Guru Les, serta Kategori Tipe Les
           </p>
         </div>
 
@@ -292,29 +292,44 @@ const Database = () => {
           </div>
         ) : activeTab === 'tutors' ? (
           /* Table Guru */
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>NIP Code</th>
-                  <th>Nama Guru</th>
-                  <th>No HP</th>
-                  <th>Spesialisasi</th>
-                  <th>Tarif Honor / Sesi</th>
-                  <th style={{ textAlign: 'center' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tutors.map((t) => {
-                  const rate = parseFloat(t.rate_per_session || 0);
-                  return (
+          <div>
+            <div style={{
+              padding: '0.65rem 0.85rem',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              borderRadius: '8px',
+              color: '#047857',
+              fontSize: '0.825rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <ShieldAlert size={16} />
+              <span>Gaji Guru Les: <strong>Rp 15.000 per pertemuan per anak</strong> (Fixed system rate).</span>
+            </div>
+
+            <div className="table-container">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>NIP Code</th>
+                    <th>Nama Guru</th>
+                    <th>No HP</th>
+                    <th>Spesialisasi</th>
+                    <th>Gaji / Pertemuan / Anak</th>
+                    <th style={{ textAlign: 'center' }}>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tutors.map((t) => (
                     <tr key={t.id}>
                       <td style={{ fontWeight: 700, color: '#7c3aed' }}>{t.nip_code}</td>
                       <td style={{ fontWeight: 600, color: '#0f172a' }}>{t.name}</td>
                       <td>{t.phone || '-'}</td>
                       <td>{t.specialization || '-'}</td>
                       <td style={{ fontWeight: 700, color: '#059669' }}>
-                        Rp {rate.toLocaleString('id-ID')}
+                        Rp 15.000 (Fix)
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -328,53 +343,71 @@ const Database = () => {
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           /* Table Kategori Les */
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>Kode Tipe</th>
-                  <th>Nama Kategori Les</th>
-                  <th>Durasi Default</th>
-                  <th>Tarif Biaya / Sesi</th>
-                  <th style={{ textAlign: 'center' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((c) => {
-                  const fee = parseFloat(c.fee_per_session || 0);
-                  return (
-                    <tr key={c.id}>
-                      <td style={{ fontWeight: 700, color: '#2563eb' }}>
-                        <span className="badge badge-indigo">{c.code}</span>
-                      </td>
-                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{c.name}</td>
-                      <td>{c.default_duration} Menit</td>
-                      <td style={{ fontWeight: 700, color: '#059669' }}>
-                        Rp {fee.toLocaleString('id-ID')}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                          <button onClick={() => handleOpenCatModal(c)} className="btn btn-secondary btn-sm">
-                            <Edit2 size={14} color="#2563eb" />
-                            <span>Edit</span>
-                          </button>
-                          <button onClick={() => handleDelete(c.id, 'les-categories')} className="btn btn-danger btn-sm">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div>
+            <div style={{
+              padding: '0.65rem 0.85rem',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '8px',
+              color: '#1d4ed8',
+              fontSize: '0.825rem',
+              marginBottom: '1rem'
+            }}>
+              💡 <strong>Tarif Les Fix (Tidak Bisa Diubah):</strong> PIH 90m: Rp 30rb, PIH 60m: Rp 25rb | PIB 90m: Rp 25rb, PIB 60m: Rp 20rb | REG: Rp 15rb.
+            </div>
+
+            <div className="table-container">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Kode Tipe</th>
+                    <th>Nama Kategori Les</th>
+                    <th>Tarif Fixed Schedule</th>
+                    <th style={{ textAlign: 'center' }}>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((c) => {
+                    const code = c.code.toUpperCase();
+                    let rateText = '';
+                    if (code === 'PIH') rateText = '90m: Rp 30.000 | 60m: Rp 25.000';
+                    else if (code === 'PIB') rateText = '90m: Rp 25.000 | 60m: Rp 20.000';
+                    else if (code === 'REG') rateText = '90m: Rp 15.000';
+                    else rateText = 'Rp 15.000';
+
+                    return (
+                      <tr key={c.id}>
+                        <td style={{ fontWeight: 700, color: '#2563eb' }}>
+                          <span className="badge badge-indigo">{c.code}</span>
+                        </td>
+                        <td style={{ fontWeight: 600, color: '#0f172a' }}>{c.name}</td>
+                        <td style={{ fontWeight: 700, color: '#059669' }}>
+                          {rateText}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                            <button onClick={() => handleOpenCatModal(c)} className="btn btn-secondary btn-sm">
+                              <Edit2 size={14} color="#2563eb" />
+                              <span>Edit</span>
+                            </button>
+                            <button onClick={() => handleDelete(c.id, 'les-categories')} className="btn btn-danger btn-sm">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -510,17 +543,6 @@ const Database = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Tarif Honor Guru / Sesi (Rp) *</label>
-            <input
-              type="number"
-              className="form-input"
-              value={tutorForm.rate_per_session}
-              onChange={(e) => setTutorForm({ ...tutorForm, rate_per_session: parseFloat(e.target.value) })}
-              required
-            />
-          </div>
-
           <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
             <button type="button" onClick={() => setShowTutorModal(false)} className="btn btn-secondary">
               Batal
@@ -541,7 +563,7 @@ const Database = () => {
         <form onSubmit={handleSaveCat}>
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Kode Tipe Les * (Contoh: PIB, PIH, REG)</label>
+              <label className="form-label">Kode Tipe Les * (PIB, PIH, REG)</label>
               <input
                 type="text"
                 className="form-input"
@@ -559,30 +581,6 @@ const Database = () => {
                 placeholder="Contoh: Privat In Bimbel"
                 value={catForm.name}
                 onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Durasi Waktu Default *</label>
-              <select
-                className="form-select"
-                value={catForm.default_duration}
-                onChange={(e) => setCatForm({ ...catForm, default_duration: parseInt(e.target.value) })}
-              >
-                <option value={60}>60 Menit</option>
-                <option value={90}>90 Menit</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Tarif Biaya Les / Sesi (Rp) *</label>
-              <input
-                type="number"
-                className="form-input"
-                value={catForm.fee_per_session}
-                onChange={(e) => setCatForm({ ...catForm, fee_per_session: parseFloat(e.target.value) })}
                 required
               />
             </div>

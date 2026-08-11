@@ -52,7 +52,8 @@ class AttendanceController extends Controller
         ]);
 
         $category = LesCategory::find($request->les_category_id);
-        $feePerSession = $category ? $category->fee_per_session : 0;
+        $duration = (int)$request->duration_minutes;
+        $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : 15000;
 
         $attendance = Attendance::create([
             'tutor_id' => $request->tutor_id,
@@ -61,7 +62,7 @@ class AttendanceController extends Controller
             'date' => $request->date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
-            'duration_minutes' => $request->duration_minutes,
+            'duration_minutes' => $duration,
             'subject' => $request->subject,
             'fee_per_session' => $feePerSession,
             'notes' => $request->notes,
@@ -102,21 +103,19 @@ class AttendanceController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        if ($request->filled('les_category_id')) {
-            $category = LesCategory::find($request->les_category_id);
-            $feePerSession = $category ? $category->fee_per_session : $attendance->fee_per_session;
-        } else {
-            $feePerSession = $attendance->fee_per_session;
-        }
+        $categoryId = $request->input('les_category_id', $attendance->les_category_id);
+        $duration = (int)$request->input('duration_minutes', $attendance->duration_minutes);
+        $category = LesCategory::find($categoryId);
+        $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : $attendance->fee_per_session;
 
         $attendance->update([
             'tutor_id' => $request->tutor_id ?? $attendance->tutor_id,
             'student_id' => $request->student_id ?? $attendance->student_id,
-            'les_category_id' => $request->les_category_id ?? $attendance->les_category_id,
+            'les_category_id' => $categoryId,
             'date' => $request->date ?? $attendance->date,
             'start_time' => $request->start_time ?? $attendance->start_time,
             'end_time' => $request->end_time ?? $attendance->end_time,
-            'duration_minutes' => $request->duration_minutes ?? $attendance->duration_minutes,
+            'duration_minutes' => $duration,
             'subject' => $request->subject ?? $attendance->subject,
             'fee_per_session' => $feePerSession,
             'notes' => $request->notes ?? $attendance->notes,
