@@ -163,7 +163,7 @@ const Attendance = () => {
                   <th>Kategori Les</th>
                   <th>Mata Pelajaran</th>
                   <th>Durasi</th>
-                  <th>Tarif Sesi (Fix)</th>
+                  <th>Tarif per Sesi</th>
                   <th>Catatan</th>
                 </tr>
               </thead>
@@ -269,7 +269,7 @@ const Attendance = () => {
             </div>
           </div>
 
-          {/* Fixed Price Badge Notice */}
+          {/* Price Badge Notice */}
           <div style={{
             margin: '0.5rem 0 1rem 0',
             padding: '0.65rem 0.85rem',
@@ -283,7 +283,7 @@ const Attendance = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1d4ed8' }}>
               <Tag size={16} />
-              <span>Tarif Biaya Sesi (Locked Fix Rate):</span>
+              <span>Tarif Biaya Sesi:</span>
             </div>
             <strong style={{ fontSize: '0.95rem', color: '#059669' }}>
               Rp {currentCalculatedFee.toLocaleString('id-ID')} / Sesi

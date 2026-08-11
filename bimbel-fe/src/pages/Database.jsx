@@ -306,7 +306,7 @@ const Database = () => {
               gap: '0.5rem'
             }}>
               <ShieldAlert size={16} />
-              <span>Gaji Guru Les: <strong>Rp 15.000 per pertemuan per anak</strong> (Fixed system rate).</span>
+              <span>Gaji Guru Les: <strong>Rp 15.000 per pertemuan per anak</strong>.</span>
             </div>
 
             <div className="table-container">
@@ -329,7 +329,7 @@ const Database = () => {
                       <td>{t.phone || '-'}</td>
                       <td>{t.specialization || '-'}</td>
                       <td style={{ fontWeight: 700, color: '#059669' }}>
-                        Rp 15.000 (Fix)
+                        Rp 15.000
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -360,7 +360,7 @@ const Database = () => {
               fontSize: '0.825rem',
               marginBottom: '1rem'
             }}>
-              💡 <strong>Tarif Les Fix (Tidak Bisa Diubah):</strong> PIH 90m: Rp 30rb, PIH 60m: Rp 25rb | PIB 90m: Rp 25rb, PIB 60m: Rp 20rb | REG: Rp 15rb.
+              💡 <strong>Tarif Les:</strong> PIH 90m: Rp 30rb, PIH 60m: Rp 25rb | PIB 90m: Rp 25rb, PIB 60m: Rp 20rb | REG: Rp 15rb.
             </div>
 
             <div className="table-container">
@@ -369,7 +369,7 @@ const Database = () => {
                   <tr>
                     <th>Kode Tipe</th>
                     <th>Nama Kategori Les</th>
-                    <th>Tarif Fixed Schedule</th>
+                    <th>Tarif Biaya Les</th>
                     <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
