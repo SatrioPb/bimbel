@@ -58,7 +58,7 @@ const Sidebar = () => {
             SIKEL BIMBEL
           </h1>
           <p style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>
-            Panel Admin Filament
+            Panel Admin
           </p>
         </div>
       </div>
