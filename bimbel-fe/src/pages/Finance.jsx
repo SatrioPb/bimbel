@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
-import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter } from 'lucide-react';
+import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter, AlertCircle, Sparkles } from 'lucide-react';
 
 const Finance = () => {
   const [invoices, setInvoices] = useState([]);
@@ -64,17 +64,25 @@ const Finance = () => {
   };
 
   const handleMarkPaid = async (invoiceId) => {
-    if (!window.confirm('Konfirmasi: Tandai invoice ini sebagai LUNAS?')) return;
+    const targetInv = invoices.find(i => i.id === invoiceId);
+    const invNo = targetInv ? targetInv.invoice_number : '';
+
     try {
       const res = await apiClient.put(`/finance/invoices/${invoiceId}/pay`, {
         status: 'paid'
       });
       if (res.data?.success) {
-        setMessage({ type: 'success', text: 'Status pembayaran berhasil diperbarui menjadi LUNAS.' });
+        setMessage({
+          type: 'success',
+          text: `Status pembayaran Invoice ${invNo ? '[' + invNo + '] ' : ''}berhasil ditandai LUNAS!`
+        });
         fetchFinanceData();
       }
     } catch (err) {
-      alert('Gagal memperbarui status invoice: ' + (err.response?.data?.message || err.message));
+      setMessage({
+        type: 'danger',
+        text: 'Gagal memperbarui status invoice: ' + (err.response?.data?.message || err.message)
+      });
     }
   };
 
@@ -92,7 +100,7 @@ const Finance = () => {
       link.click();
       link.remove();
     } catch (err) {
-      alert('Gagal mengunduh PDF Invoice.');
+      setMessage({ type: 'danger', text: 'Gagal mengunduh PDF Invoice.' });
     }
   };
 
@@ -110,7 +118,7 @@ const Finance = () => {
       link.click();
       link.remove();
     } catch (err) {
-      alert(`Gagal mengeksport berkas ${format}.`);
+      setMessage({ type: 'danger', text: `Gagal mengeksport berkas ${format}.` });
     }
   };
 
@@ -163,17 +171,22 @@ const Finance = () => {
         </div>
       </div>
 
+      {/* Attractive Badge Pill Notification */}
       {message && (
-        <div style={{
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fff1f2',
-          border: message.type === 'success' ? '1px solid #a7f3d0' : '1px solid #fecdd3',
-          color: message.type === 'success' ? '#047857' : '#be123c',
-          fontSize: '0.85rem',
-          fontWeight: 500
-        }}>
-          {message.text}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span
+            className={`badge ${message.type === 'success' ? 'badge-emerald' : 'badge-rose'}`}
+            style={{
+              padding: '0.65rem 1.1rem',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              gap: '0.6rem',
+              boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            <span>{message.text}</span>
+          </span>
         </div>
       )}
 
