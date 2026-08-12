@@ -408,18 +408,14 @@ const Database = () => {
                   <tr>
                     <th>Kode Tipe</th>
                     <th>Nama Kategori Les</th>
+                    <th>Durasi Waktu</th>
                     <th>Tarif Biaya Les</th>
                     <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {categories.map((c) => {
-                    const code = c.code.toUpperCase();
-                    let rateText = '';
-                    if (code === 'PIH') rateText = '90m: Rp 30.000 | 60m: Rp 25.000';
-                    else if (code === 'PIB') rateText = '90m: Rp 25.000 | 60m: Rp 20.000';
-                    else if (code === 'REG') rateText = '90m: Rp 15.000';
-                    else rateText = 'Rp 15.000';
+                    const fee = parseFloat(c.fee_per_session || 0);
 
                     return (
                       <tr key={c.id}>
@@ -427,8 +423,9 @@ const Database = () => {
                           <span className="badge badge-indigo">{c.code}</span>
                         </td>
                         <td style={{ fontWeight: 600, color: '#0f172a' }}>{c.name}</td>
+                        <td>{c.default_duration} Menit</td>
                         <td style={{ fontWeight: 700, color: '#059669' }}>
-                          {rateText}
+                          Rp {fee.toLocaleString('id-ID')}
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'inline-flex', gap: '0.4rem' }}>

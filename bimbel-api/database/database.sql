@@ -1,4 +1,4 @@
--- MySQL dump for bimbel database (Fixed Pricing & Salary Revision)
+-- MySQL dump for bimbel database (5 Fixed Les Categories Revision)
 CREATE DATABASE IF NOT EXISTS `bimbel` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `bimbel`;
 
@@ -123,9 +123,11 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `phone`, `status
 (2, 'Guru Bimbel', 'guru@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'guru', '081299990000', 'active', NOW(), NOW());
 
 INSERT INTO `les_categories` (`id`, `code`, `name`, `default_duration`, `fee_per_session`, `created_at`, `updated_at`) VALUES
-(1, 'REG', 'Les Reguler', 90, 15000.00, NOW(), NOW()),
-(2, 'PIH', 'Privat In House', 90, 30000.00, NOW(), NOW()),
-(3, 'PIB', 'Privat In Bimbel', 60, 20000.00, NOW(), NOW());
+(1, 'PIH90', 'Privat In House 90 Menit', 90, 30000.00, NOW(), NOW()),
+(2, 'PIH60', 'Privat In House 60 Menit', 60, 25000.00, NOW(), NOW()),
+(3, 'PIB90', 'Privat In Bimbel 90 Menit', 90, 25000.00, NOW(), NOW()),
+(4, 'PIB60', 'Privat In Bimbel 60 Menit', 60, 20000.00, NOW(), NOW()),
+(5, 'REG', 'Les Reguler', 90, 15000.00, NOW(), NOW());
 
 INSERT INTO `tutors` (`id`, `nip_code`, `name`, `phone`, `specialization`, `rate_per_session`, `created_at`, `updated_at`) VALUES
 (1, 'G2026001', 'Budi Santoso, S.Pd', '081299990001', 'Matematika & IPA', 15000.00, NOW(), NOW()),

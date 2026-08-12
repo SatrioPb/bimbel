@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // 2. Shared Guru User Account (Satu akun guru untuk semua guru)
+        // 2. Shared Guru User Account
         $sharedGuru = User::create([
             'name' => 'Guru Bimbel',
             'email' => 'guru@bimbel.com',
@@ -45,29 +45,40 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // 3. Kategori Tipe Les (Les Categories with Fixed Pricing)
-        // Reguler: 15.000
+        // 3. Kategori Tipe Les (5 Explicit Categories with Fixed Pricing & Durations)
+        $catPih90 = LesCategory::create([
+            'code' => 'PIH90',
+            'name' => 'Privat In House 90 Menit',
+            'default_duration' => 90,
+            'fee_per_session' => 30000,
+        ]);
+
+        $catPih60 = LesCategory::create([
+            'code' => 'PIH60',
+            'name' => 'Privat In House 60 Menit',
+            'default_duration' => 60,
+            'fee_per_session' => 25000,
+        ]);
+
+        $catPib90 = LesCategory::create([
+            'code' => 'PIB90',
+            'name' => 'Privat In Bimbel 90 Menit',
+            'default_duration' => 90,
+            'fee_per_session' => 25000,
+        ]);
+
+        $catPib60 = LesCategory::create([
+            'code' => 'PIB60',
+            'name' => 'Privat In Bimbel 60 Menit',
+            'default_duration' => 60,
+            'fee_per_session' => 20000,
+        ]);
+
         $catReg = LesCategory::create([
             'code' => 'REG',
             'name' => 'Les Reguler',
             'default_duration' => 90,
             'fee_per_session' => 15000,
-        ]);
-
-        // Privat In House: 90m = 30.000, 60m = 25.000
-        $catPih = LesCategory::create([
-            'code' => 'PIH',
-            'name' => 'Privat In House',
-            'default_duration' => 90,
-            'fee_per_session' => 30000,
-        ]);
-
-        // Privat In Bimbel: 90m = 25.000, 60m = 20.000
-        $catPib = LesCategory::create([
-            'code' => 'PIB',
-            'name' => 'Privat In Bimbel',
-            'default_duration' => 60,
-            'fee_per_session' => 20000,
         ]);
 
         // 4. Data Guru Les (Fixed Honor: 15.000 per pertemuan per anak)
@@ -137,26 +148,26 @@ class DatabaseSeeder extends Seeder
         Attendance::create([
             'tutor_id' => $tutor1->id,
             'student_id' => $s3->id,
-            'les_category_id' => $catPih->id,
+            'les_category_id' => $catPih90->id,
             'date' => date('Y-m-d', strtotime('-3 days')),
             'start_time' => '16:00',
             'end_time' => '17:30',
             'duration_minutes' => 90,
             'subject' => 'Fisika',
-            'fee_per_session' => 30000, // PIH 90m = 30.000
+            'fee_per_session' => 30000,
             'notes' => 'Tatap muka di rumah murid.',
         ]);
 
         Attendance::create([
             'tutor_id' => $tutor2->id,
             'student_id' => $s2->id,
-            'les_category_id' => $catPib->id,
+            'les_category_id' => $catPib60->id,
             'date' => date('Y-m-d', strtotime('-2 days')),
             'start_time' => '14:00',
             'end_time' => '15:00',
             'duration_minutes' => 60,
             'subject' => 'Bahasa Inggris',
-            'fee_per_session' => 20000, // PIB 60m = 20.000
+            'fee_per_session' => 20000,
             'notes' => 'Latihan percakapan lancar.',
         ]);
 
