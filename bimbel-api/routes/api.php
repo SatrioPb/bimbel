@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\LesCategoryController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\FinanceController;
+use App\Http\Controllers\Api\TeacherAccountController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -54,6 +55,7 @@ Route::prefix('v1')->group(function () {
                 Route::apiResource('/students', StudentController::class);
                 Route::apiResource('/tutors', TutorController::class);
                 Route::apiResource('/les-categories', LesCategoryController::class);
+                Route::apiResource('/teacher-accounts', TeacherAccountController::class);
             });
 
             // Menu Keuangan

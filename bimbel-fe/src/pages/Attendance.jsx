@@ -20,7 +20,6 @@ const Attendance = () => {
     date: new Date().toISOString().split('T')[0],
     start_time: '15:00',
     end_time: '16:30',
-    duration_minutes: 90,
     subject: '',
     notes: ''
   });
@@ -53,19 +52,14 @@ const Attendance = () => {
   };
 
   const handleCategorySelect = (categoryId) => {
-    const selected = categories.find(c => c.id === parseInt(categoryId));
-    const isReg = selected ? selected.code.toUpperCase() === 'REG' : false;
-
     setFormData(prev => ({
       ...prev,
-      les_category_id: categoryId,
-      duration_minutes: isReg ? 90 : (selected ? selected.default_duration : 90)
+      les_category_id: categoryId
     }));
   };
 
   const handleOpenModal = () => {
     const defaultCat = categories.length > 0 ? categories[0] : null;
-    const isReg = defaultCat ? defaultCat.code.toUpperCase() === 'REG' : false;
 
     setFormData({
       tutor_id: tutors.length > 0 ? tutors[0].id : '',
@@ -74,7 +68,6 @@ const Attendance = () => {
       date: new Date().toISOString().split('T')[0],
       start_time: '15:00',
       end_time: '16:30',
-      duration_minutes: isReg ? 90 : (defaultCat ? defaultCat.default_duration : 90),
       subject: '',
       notes: ''
     });
@@ -103,22 +96,14 @@ const Attendance = () => {
     }
   };
 
-  const selectedCat = categories.find(c => c.id === parseInt(formData.les_category_id));
-  const isReguler = selectedCat ? selectedCat.code.toUpperCase() === 'REG' : false;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
       {message && (
-        <div style={{
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fff1f2',
-          border: message.type === 'success' ? '1px solid #a7f3d0' : '1px solid #fecdd3',
-          color: message.type === 'success' ? '#047857' : '#be123c',
-          fontSize: '0.85rem',
-          fontWeight: 500
-        }}>
-          {message.text}
+        <div style={{ display: 'flex', marginBottom: '0.5rem' }}>
+          <span className={`badge ${message.type === 'success' ? 'badge-emerald' : 'badge-rose'}`} style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', gap: '0.5rem' }}>
+            <AlertCircle size={16} />
+            <span>{message.text}</span>
+          </span>
         </div>
       )}
 
@@ -249,25 +234,6 @@ const Attendance = () => {
               </select>
             </div>
 
-            {/* Durasi Waktu Les (Readonly 90m jika Reguler) */}
-            <div className="form-group">
-              <label className="form-label">
-                Durasi Waktu Les * {isReguler && <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>(Les Reguler = 90 Menit)</span>}
-              </label>
-              <select
-                className="form-select"
-                value={isReguler ? 90 : formData.duration_minutes}
-                onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                disabled={isReguler}
-                style={isReguler ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed' } : {}}
-              >
-                <option value={60}>60 Menit</option>
-                <option value={90}>90 Menit</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid-2">
             {/* Tanggal */}
             <div className="form-group">
               <label className="form-label">Tanggal Mengajar *</label>
@@ -279,18 +245,18 @@ const Attendance = () => {
                 required
               />
             </div>
+          </div>
 
-            {/* Mata Pelajaran (Optional) */}
-            <div className="form-group">
-              <label className="form-label">Mata Pelajaran (Opsional)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Contoh: Matematika, Fisika (opsional)"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-              />
-            </div>
+          {/* Mata Pelajaran (Optional) */}
+          <div className="form-group">
+            <label className="form-label">Mata Pelajaran (Opsional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Contoh: Matematika, Fisika (opsional)"
+              value={formData.subject}
+              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+            />
           </div>
 
           <div className="form-group">

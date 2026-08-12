@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert } from 'lucide-react';
+import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck } from 'lucide-react';
 
 const Database = () => {
-  const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories'
+  const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories', 'teachers'
   const [students, setStudents] = useState([]);
   const [tutors, setTutors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [teacherAccounts, setTeacherAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Student Form Modal State
@@ -28,8 +29,7 @@ const Database = () => {
     name: '',
     phone: '',
     nip_code: '',
-    specialization: '',
-    rate_per_session: 15000
+    specialization: ''
   });
 
   // Category Form Modal State
@@ -40,6 +40,16 @@ const Database = () => {
     name: '',
     default_duration: 90,
     fee_per_session: 15000
+  });
+
+  // Teacher Login Account Form Modal State
+  const [showTeacherModal, setShowTeacherModal] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [teacherForm, setTeacherForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: ''
   });
 
   useEffect(() => {
@@ -55,9 +65,12 @@ const Database = () => {
       } else if (activeTab === 'tutors') {
         const res = await apiClient.get('/database/tutors');
         if (res.data?.success) setTutors(res.data.data);
-      } else {
+      } else if (activeTab === 'categories') {
         const res = await apiClient.get('/database/les-categories');
         if (res.data?.success) setCategories(res.data.data);
+      } else if (activeTab === 'teachers') {
+        const res = await apiClient.get('/database/teacher-accounts');
+        if (res.data?.success) setTeacherAccounts(res.data.data);
       }
     } catch (err) {
       console.error('Error fetching database:', err);
@@ -113,8 +126,7 @@ const Database = () => {
         name: tutor.name || '',
         phone: tutor.phone || '',
         nip_code: tutor.nip_code || '',
-        specialization: tutor.specialization || '',
-        rate_per_session: 15000
+        specialization: tutor.specialization || ''
       });
     } else {
       setEditingTutor(null);
@@ -122,8 +134,7 @@ const Database = () => {
         name: '',
         phone: '',
         nip_code: `G${new Date().getFullYear()}${Math.floor(100 + Math.random() * 900)}`,
-        specialization: '',
-        rate_per_session: 15000
+        specialization: ''
       });
     }
     setShowTutorModal(true);
@@ -181,6 +192,43 @@ const Database = () => {
     }
   };
 
+  // Teacher Login Account Handlers
+  const handleOpenTeacherModal = (account = null) => {
+    if (account) {
+      setEditingTeacher(account);
+      setTeacherForm({
+        name: account.name || '',
+        email: account.email || '',
+        password: '',
+        phone: account.phone || ''
+      });
+    } else {
+      setEditingTeacher(null);
+      setTeacherForm({
+        name: '',
+        email: '',
+        password: 'password123',
+        phone: ''
+      });
+    }
+    setShowTeacherModal(true);
+  };
+
+  const handleSaveTeacher = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingTeacher) {
+        await apiClient.put(`/database/teacher-accounts/${editingTeacher.id}`, teacherForm);
+      } else {
+        await apiClient.post('/database/teacher-accounts', teacherForm);
+      }
+      setShowTeacherModal(false);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menyimpan akun guru.');
+    }
+  };
+
   // Delete Item
   const handleDelete = async (id, type) => {
     if (!window.confirm(`Hapus data ${type} ini?`)) return;
@@ -202,7 +250,7 @@ const Database = () => {
             Menu Database Les
           </h2>
           <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Kelola data Murid Les, Data Profil Guru Les, serta Kategori Tipe Les
+            Kelola data Murid Les, Data Profil Guru Les, Kategori Tipe Les, serta Akun Login Guru
           </p>
         </div>
 
@@ -217,10 +265,15 @@ const Database = () => {
               <Plus size={18} />
               <span>Tambah Guru Baru</span>
             </button>
-          ) : (
+          ) : activeTab === 'categories' ? (
             <button onClick={() => handleOpenCatModal()} className="btn btn-secondary" style={{ borderColor: '#2563eb', color: '#2563eb' }}>
               <Plus size={18} />
               <span>Tambah Kategori Tipe Les</span>
+            </button>
+          ) : (
+            <button onClick={() => handleOpenTeacherModal()} className="btn btn-emerald">
+              <Plus size={18} />
+              <span>Tambah Akun Login Guru</span>
             </button>
           )}
         </div>
@@ -247,6 +300,12 @@ const Database = () => {
             onClick={() => setActiveTab('categories')}
           >
             🏷️ Kategori Tipe Les ({categories.length})
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'teachers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('teachers')}
+          >
+            🔑 Akun Login Guru ({teacherAccounts.length})
           </button>
         </div>
 
@@ -291,33 +350,16 @@ const Database = () => {
             </table>
           </div>
         ) : activeTab === 'tutors' ? (
-          /* Table Guru */
+          /* Table Guru (Tarif removed) */
           <div>
-            <div style={{
-              padding: '0.65rem 0.85rem',
-              backgroundColor: '#ecfdf5',
-              border: '1px solid #a7f3d0',
-              borderRadius: '8px',
-              color: '#047857',
-              fontSize: '0.825rem',
-              marginBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <ShieldAlert size={16} />
-              <span>Gaji Guru Les: <strong>Rp 15.000 per pertemuan per anak</strong>.</span>
-            </div>
-
             <div className="table-container">
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th>NIP Code</th>
+                    <th>Kode Guru</th>
                     <th>Nama Guru</th>
                     <th>No HP</th>
                     <th>Spesialisasi</th>
-                    <th>Gaji / Pertemuan / Anak</th>
                     <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
@@ -328,9 +370,6 @@ const Database = () => {
                       <td style={{ fontWeight: 600, color: '#0f172a' }}>{t.name}</td>
                       <td>{t.phone || '-'}</td>
                       <td>{t.specialization || '-'}</td>
-                      <td style={{ fontWeight: 700, color: '#059669' }}>
-                        Rp 15.000
-                      </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                           <button onClick={() => handleOpenTutorModal(t)} className="btn btn-secondary btn-sm">
@@ -348,7 +387,7 @@ const Database = () => {
               </table>
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'categories' ? (
           /* Table Kategori Les */
           <div>
             <div style={{
@@ -408,6 +447,44 @@ const Database = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        ) : (
+          /* Table Akun Login Guru */
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Nama Pengguna</th>
+                  <th>Email Login</th>
+                  <th>No HP</th>
+                  <th>Role Hak Akses</th>
+                  <th style={{ textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teacherAccounts.map((acc) => (
+                  <tr key={acc.id}>
+                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{acc.name}</td>
+                    <td style={{ color: '#2563eb', fontWeight: 600 }}>{acc.email}</td>
+                    <td>{acc.phone || '-'}</td>
+                    <td>
+                      <span className="badge badge-emerald">GURU LES</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                        <button onClick={() => handleOpenTeacherModal(acc)} className="btn btn-secondary btn-sm">
+                          <Edit2 size={14} color="#059669" />
+                          <span>Edit</span>
+                        </button>
+                        <button onClick={() => handleDelete(acc.id, 'teacher-accounts')} className="btn btn-danger btn-sm">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -489,7 +566,7 @@ const Database = () => {
         </form>
       </Modal>
 
-      {/* Modal Tutor Form */}
+      {/* Modal Tutor Form (Tarif Input Removed, NIP -> Kode Guru) */}
       <Modal
         isOpen={showTutorModal}
         onClose={() => setShowTutorModal(false)}
@@ -498,7 +575,7 @@ const Database = () => {
         <form onSubmit={handleSaveTutor}>
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Kode NIP Guru *</label>
+              <label className="form-label">Kode Guru *</label>
               <input
                 type="text"
                 className="form-input"
@@ -592,6 +669,75 @@ const Database = () => {
             </button>
             <button type="submit" className="btn btn-primary">
               Simpan Kategori Les
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Teacher Login Account Form */}
+      <Modal
+        isOpen={showTeacherModal}
+        onClose={() => setShowTeacherModal(false)}
+        title={editingTeacher ? 'Edit Akun Login Guru' : 'Tambah Akun Login Guru Baru'}
+      >
+        <form onSubmit={handleSaveTeacher}>
+          <div className="form-group">
+            <label className="form-label">Nama Guru *</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Nama lengkap guru"
+              value={teacherForm.name}
+              onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Email Login Guru *</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="guru@bimbel.com"
+                value={teacherForm.email}
+                onChange={(e) => setTeacherForm({ ...teacherForm, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Password {editingTeacher ? '(Kosongkan jika tidak diubah)' : '*'}
+              </label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={teacherForm.password}
+                onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
+                required={!editingTeacher}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">No. HP Guru (Opsional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="0812xxxxxxxx"
+              value={teacherForm.phone}
+              onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })}
+            />
+          </div>
+
+          <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <button type="button" onClick={() => setShowTeacherModal(false)} className="btn btn-secondary">
+              Batal
+            </button>
+            <button type="submit" className="btn btn-emerald">
+              Simpan Akun Guru
             </button>
           </div>
         </form>

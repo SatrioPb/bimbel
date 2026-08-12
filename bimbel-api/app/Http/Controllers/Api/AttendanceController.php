@@ -46,13 +46,13 @@ class AttendanceController extends Controller
             'date' => 'required|date',
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
-            'duration_minutes' => 'required|integer|in:60,90',
+            'duration_minutes' => 'nullable|integer',
             'subject' => 'nullable|string|max:255', // Mata Pelajaran Optional
             'notes' => 'nullable|string',
         ]);
 
         $category = LesCategory::find($request->les_category_id);
-        $duration = (int)$request->duration_minutes;
+        $duration = $request->filled('duration_minutes') ? (int)$request->duration_minutes : ($category ? $category->default_duration : 90);
         $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : 15000;
 
         $attendance = Attendance::create([
@@ -98,14 +98,14 @@ class AttendanceController extends Controller
             'date' => 'sometimes|required|date',
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
-            'duration_minutes' => 'sometimes|required|integer|in:60,90',
+            'duration_minutes' => 'nullable|integer',
             'subject' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
         $categoryId = $request->input('les_category_id', $attendance->les_category_id);
-        $duration = (int)$request->input('duration_minutes', $attendance->duration_minutes);
         $category = LesCategory::find($categoryId);
+        $duration = $request->filled('duration_minutes') ? (int)$request->duration_minutes : ($category ? $category->default_duration : $attendance->duration_minutes);
         $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : $attendance->fee_per_session;
 
         $attendance->update([

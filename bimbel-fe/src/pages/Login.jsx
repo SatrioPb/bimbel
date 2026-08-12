@@ -100,20 +100,11 @@ const Login = () => {
         </div>
 
         {error && (
-          <div style={{
-            padding: '0.75rem 1rem',
-            backgroundColor: '#fff1f2',
-            border: '1px solid #fecdd3',
-            borderRadius: '8px',
-            color: '#be123c',
-            fontSize: '0.825rem',
-            marginBottom: '1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <AlertCircle size={16} flexShrink={0} />
-            <span>{error}</span>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+            <span className="badge badge-rose" style={{ padding: '0.6rem 1rem', fontSize: '0.825rem', width: '100%', justifyContent: 'center', gap: '0.5rem' }}>
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </span>
           </div>
         )}
 
