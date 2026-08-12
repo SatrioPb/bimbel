@@ -190,7 +190,7 @@ const Attendance = () => {
                 <option value="">-- Pilih Guru --</option>
                 {tutors.map(t => (
                   <option key={t.id} value={t.id}>
-                    {t.name} ({t.nip_code})
+                    {t.name}
                   </option>
                 ))}
               </select>
@@ -208,7 +208,7 @@ const Attendance = () => {
                 <option value="">-- Pilih Murid --</option>
                 {students.map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.student_code})
+                    {s.name}
                   </option>
                 ))}
               </select>
