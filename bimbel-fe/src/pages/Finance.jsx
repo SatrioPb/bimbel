@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
-import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter, AlertCircle, Sparkles } from 'lucide-react';
+import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter, AlertCircle, Sparkles, AlertTriangle } from 'lucide-react';
 
 const Finance = () => {
   const [invoices, setInvoices] = useState([]);
   const [incomeSummary, setIncomeSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Modals
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [confirmPaidModal, setConfirmPaidModal] = useState(false);
+  const [selectedInvoiceForPay, setSelectedInvoiceForPay] = useState(null);
+  const [paying, setPaying] = useState(false);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -63,19 +68,29 @@ const Finance = () => {
     }
   };
 
-  const handleMarkPaid = async (invoiceId) => {
-    const targetInv = invoices.find(i => i.id === invoiceId);
-    const invNo = targetInv ? targetInv.invoice_number : '';
+  // Open Pay Confirmation Modal
+  const handleOpenPayConfirm = (inv) => {
+    setSelectedInvoiceForPay(inv);
+    setConfirmPaidModal(true);
+  };
+
+  // Execute Mark Paid after user clicks "Ya, Tandai Lunas"
+  const handleConfirmPay = async () => {
+    if (!selectedInvoiceForPay) return;
+    setPaying(true);
+    const invNo = selectedInvoiceForPay.invoice_number;
 
     try {
-      const res = await apiClient.put(`/finance/invoices/${invoiceId}/pay`, {
+      const res = await apiClient.put(`/finance/invoices/${selectedInvoiceForPay.id}/pay`, {
         status: 'paid'
       });
       if (res.data?.success) {
         setMessage({
           type: 'success',
-          text: `Status pembayaran Invoice ${invNo ? '[' + invNo + '] ' : ''}berhasil ditandai LUNAS!`
+          text: `Status pembayaran Invoice [${invNo}] berhasil ditandai LUNAS!`
         });
+        setConfirmPaidModal(false);
+        setSelectedInvoiceForPay(null);
         fetchFinanceData();
       }
     } catch (err) {
@@ -83,6 +98,8 @@ const Finance = () => {
         type: 'danger',
         text: 'Gagal memperbarui status invoice: ' + (err.response?.data?.message || err.message)
       });
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -294,7 +311,7 @@ const Finance = () => {
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                           {inv.status === 'unpaid' && (
                             <button
-                              onClick={() => handleMarkPaid(inv.id)}
+                              onClick={() => handleOpenPayConfirm(inv)}
                               className="btn btn-emerald btn-sm"
                             >
                               <CheckCircle2 size={14} />
@@ -319,6 +336,89 @@ const Finance = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal Yes/No for Tandai Lunas */}
+      <Modal
+        isOpen={confirmPaidModal}
+        onClose={() => setConfirmPaidModal(false)}
+        title="Konfirmasi Pembayaran Tagihan"
+      >
+        <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: '#ecfdf5',
+            border: '1px solid #a7f3d0',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1rem'
+          }}>
+            <CheckCircle2 size={32} color="#059669" />
+          </div>
+
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.35rem' }}>
+            Tandai Tagihan Sebagai LUNAS?
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
+            Apakah Anda yakin ingin memproses status pembayaran invoice berikut menjadi LUNAS?
+          </p>
+
+          {selectedInvoiceForPay && (
+            <div style={{
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              padding: '1rem 1.25rem',
+              textAlign: 'left',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.4rem',
+              fontSize: '0.85rem'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748b' }}>No. Invoice:</span>
+                <strong style={{ color: '#2563eb' }}>{selectedInvoiceForPay.invoice_number}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748b' }}>Nama Murid:</span>
+                <strong style={{ color: '#0f172a' }}>{selectedInvoiceForPay.student?.name || selectedInvoiceForPay.student_id}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748b' }}>Wali Murid:</span>
+                <span>{selectedInvoiceForPay.student?.parent_name || '-'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #cbd5e1', paddingTop: '0.4rem', marginTop: '0.2rem' }}>
+                <span style={{ color: '#64748b', fontWeight: 600 }}>Total Tagihan:</span>
+                <strong style={{ color: '#059669', fontSize: '1rem' }}>
+                  Rp {parseFloat(selectedInvoiceForPay.final_amount || 0).toLocaleString('id-ID')}
+                </strong>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => setConfirmPaidModal(false)}
+              className="btn btn-secondary"
+              disabled={paying}
+            >
+              Batal / Tidak
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmPay}
+              className="btn btn-emerald"
+              disabled={paying}
+            >
+              {paying ? 'Memproses...' : 'Ya, Tandai Lunas'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal Generate Invoice */}
       <Modal isOpen={showGenerateModal} onClose={() => setShowGenerateModal(false)} title="Generate Invoice Les Bulanan">
