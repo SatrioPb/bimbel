@@ -1,4 +1,4 @@
--- MySQL dump for bimbel database (5 Fixed Les Categories Revision)
+-- MySQL dump for bimbel database (Rich Test Data Revision)
 CREATE DATABASE IF NOT EXISTS `bimbel` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `bimbel`;
 
@@ -119,8 +119,10 @@ CREATE TABLE `invoices` (
 
 -- Sample Data Inserts
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `phone`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Admin Bimbel', 'admin@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'admin', '081234567890', 'active', NOW(), NOW()),
-(2, 'Guru Bimbel', 'guru@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'guru', '081299990000', 'active', NOW(), NOW());
+(1, 'Admin Utama Bimbel', 'admin@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'admin', '081234567890', 'active', NOW(), NOW()),
+(2, 'Guru Bimbel (Umum)', 'guru@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'guru', '081299990000', 'active', NOW(), NOW()),
+(3, 'Budi Santoso, S.Pd', 'budi@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'guru', '081299990001', 'active', NOW(), NOW()),
+(4, 'Siti Aminah, M.Pd', 'siti@bimbel.com', '$2y$12$xLncXjXjIUKbdbYdY2OfwumrAHTcsogB/k7FUw/Lfdharb7mk6ghu', 'guru', '081299990002', 'active', NOW(), NOW());
 
 INSERT INTO `les_categories` (`id`, `code`, `name`, `default_duration`, `fee_per_session`, `created_at`, `updated_at`) VALUES
 (1, 'PIH90', 'Privat In House 90 Menit', 90, 30000.00, NOW(), NOW()),
@@ -130,13 +132,17 @@ INSERT INTO `les_categories` (`id`, `code`, `name`, `default_duration`, `fee_per
 (5, 'REG', 'Les Reguler', 90, 15000.00, NOW(), NOW());
 
 INSERT INTO `tutors` (`id`, `nip_code`, `name`, `phone`, `specialization`, `rate_per_session`, `created_at`, `updated_at`) VALUES
-(1, 'G2026001', 'Budi Santoso, S.Pd', '081299990001', 'Matematika & IPA', 15000.00, NOW(), NOW()),
-(2, 'G2026002', 'Siti Aminah, M.Pd', '081299990002', 'Bahasa Inggris', 15000.00, NOW(), NOW());
+(1, 'G2026001', 'Budi Santoso, S.Pd', '081299990001', 'Matematika & Fisika (SMA)', 15000.00, NOW(), NOW()),
+(2, 'G2026002', 'Siti Aminah, M.Pd', '081299990002', 'Bahasa Inggris & Bahasa Indonesia', 15000.00, NOW(), NOW()),
+(3, 'G2026003', 'Rizky Pratama, S.Si', '081299990003', 'Kimia & Biologi (SMP/SMA)', 15000.00, NOW(), NOW()),
+(4, 'G2026004', 'Dewi Lestari, S.Pd', '081299990004', 'Tematik SD & Matematika Dasar', 15000.00, NOW(), NOW());
 
 INSERT INTO `students` (`id`, `student_code`, `name`, `parent_name`, `parent_phone`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'M2026001', 'Andi Wijaya', 'Bambang Wijaya', '08111111111', 'Jl. Mawar No. 12, Jakarta', NOW(), NOW()),
-(2, 'M2026002', 'Citra Dewi', 'Hendra Dewi', '08122222222', 'Jl. Melati No. 45, Jakarta', NOW(), NOW()),
-(3, 'M2026003', 'Doni Pratama', 'Eko Pratama', '08133333333', 'Jl. Anggrek No. 8, Jakarta', NOW(), NOW()),
-(4, 'M2026004', 'Elisa Fitri', 'Gunawan Fitri', '08144444444', 'Jl. Flamboyan No. 20, Jakarta', NOW(), NOW());
+(1, 'M2026001', 'Andi Wijaya', 'Bambang Wijaya', '08111111111', 'Jl. Mawar No. 12, Kebayoran Baru, Jakarta Selatan', NOW(), NOW()),
+(2, 'M2026002', 'Citra Dewi', 'Hendra Dewi', '08122222222', 'Jl. Melati No. 45, Tebet, Jakarta Selatan', NOW(), NOW()),
+(3, 'M2026003', 'Doni Pratama', 'Eko Pratama', '08133333333', 'Jl. Anggrek No. 8, Setiabudi, Jakarta Selatan', NOW(), NOW()),
+(4, 'M2026004', 'Elisa Fitri', 'Gunawan Fitri', '08144444444', 'Jl. Flamboyan No. 20, Cilandak, Jakarta Selatan', NOW(), NOW()),
+(5, 'M2026005', 'Farhan Kurniadi', 'Agus Kurniadi', '08155555555', 'Jl. Dahlia No. 3, Pasar Minggu, Jakarta Selatan', NOW(), NOW()),
+(6, 'M2026006', 'Grace Nabila', 'Rudy Nabila', '08166666666', 'Jl. Cempaka No. 88, Pancoran, Jakarta Selatan', NOW(), NOW());
 
 SET FOREIGN_KEY_CHECKS = 1;
