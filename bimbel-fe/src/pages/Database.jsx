@@ -660,6 +660,32 @@ const Database = () => {
             </div>
           </div>
 
+          <div className="grid-2" style={{ marginTop: '0.75rem' }}>
+            <div className="form-group">
+              <label className="form-label">Durasi Waktu Default *</label>
+              <select
+                className="form-select"
+                value={catForm.default_duration}
+                onChange={(e) => setCatForm({ ...catForm, default_duration: parseInt(e.target.value) })}
+                required
+              >
+                <option value={60}>60 Menit</option>
+                <option value={90}>90 Menit</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Tarif Biaya Les / Sesi (Rp) *</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="Contoh: 30000"
+                value={catForm.fee_per_session}
+                onChange={(e) => setCatForm({ ...catForm, fee_per_session: parseFloat(e.target.value) })}
+                required
+              />
+            </div>
+          </div>
+
           <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
             <button type="button" onClick={() => setShowCatModal(false)} className="btn btn-secondary">
               Batal
