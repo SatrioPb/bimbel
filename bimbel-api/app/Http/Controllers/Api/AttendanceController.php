@@ -53,7 +53,7 @@ class AttendanceController extends Controller
 
         $category = LesCategory::find($request->les_category_id);
         $duration = $request->filled('duration_minutes') ? (int)$request->duration_minutes : ($category ? $category->default_duration : 90);
-        $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : 15000;
+        $feePerSession = $category ? (float)$category->fee_per_session : 15000;
 
         $attendance = Attendance::create([
             'tutor_id' => $request->tutor_id,
@@ -106,7 +106,7 @@ class AttendanceController extends Controller
         $categoryId = $request->input('les_category_id', $attendance->les_category_id);
         $category = LesCategory::find($categoryId);
         $duration = $request->filled('duration_minutes') ? (int)$request->duration_minutes : ($category ? $category->default_duration : $attendance->duration_minutes);
-        $feePerSession = $category ? LesCategory::calculateFixedFee($category->code, $duration) : $attendance->fee_per_session;
+        $feePerSession = $category ? (float)$category->fee_per_session : $attendance->fee_per_session;
 
         $attendance->update([
             'tutor_id' => $request->tutor_id ?? $attendance->tutor_id,

@@ -18,6 +18,11 @@ class LesCategory extends Model
 
     public static function calculateFixedFee($code, $durationMinutes = 90)
     {
+        $cat = self::where('code', strtoupper(trim($code)))->first();
+        if ($cat) {
+            return (float)$cat->fee_per_session;
+        }
+
         $c = strtoupper(trim($code));
         $d = (int)$durationMinutes;
 
