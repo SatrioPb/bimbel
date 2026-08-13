@@ -42,7 +42,7 @@ class FinanceController extends Controller
         ]);
     }
 
-    // Auto-generate Invoices for month/year based on attendances
+    // Auto-generate Invoices for month/year based on attendances (Active Students Only)
     public function generateInvoices(Request $request)
     {
         $request->validate([
@@ -53,7 +53,20 @@ class FinanceController extends Controller
         $month = (int)$request->month;
         $year = (int)$request->year;
 
-        $activeStudents = Student::all();
+        // Only fetch student IDs who have attendance records in this month & year
+        $activeStudentIds = Attendance::whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->distinct()
+            ->pluck('student_id');
+
+        if ($activeStudentIds->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Tidak ada sesi les murid yang dicatat pada periode " . sprintf('%02d', $month) . "/{$year}. Tidak ada invoice yang digenerate.",
+            ]);
+        }
+
+        $activeStudents = Student::whereIn('id', $activeStudentIds)->get();
         $generatedCount = 0;
 
         foreach ($activeStudents as $student) {
@@ -64,7 +77,11 @@ class FinanceController extends Controller
                 ->get();
 
             $totalSessions = $attendances->count();
-            $feePerSession = $totalSessions > 0 ? (float)$attendances->first()->fee_per_session : 0;
+            if ($totalSessions === 0) {
+                continue;
+            }
+
+            $feePerSession = (float)$attendances->first()->fee_per_session;
             $totalAmount = (float)$attendances->sum('fee_per_session');
             $discount = 0;
             $finalAmount = max(0, $totalAmount - $discount);
@@ -110,7 +127,7 @@ class FinanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Berhasil memproses {$generatedCount} invoice tagihan les untuk periode " . sprintf('%02d', $month) . "/{$year}.",
+            'message' => "Berhasil memproses {$generatedCount} invoice tagihan les untuk murid aktif periode " . sprintf('%02d', $month) . "/{$year}.",
         ]);
     }
 
