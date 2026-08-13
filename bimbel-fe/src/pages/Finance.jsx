@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
-import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter, AlertCircle, Sparkles, AlertTriangle } from 'lucide-react';
+import { Wallet, FileText, FileSpreadsheet, CheckCircle2, Clock, Plus, Download, Search, Filter, AlertCircle, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const Finance = () => {
   const [invoices, setInvoices] = useState([]);
@@ -15,13 +15,18 @@ const Finance = () => {
   const [selectedInvoiceForPay, setSelectedInvoiceForPay] = useState(null);
   const [paying, setPaying] = useState(false);
 
+  const currentMonthNum = new Date().getMonth() + 1;
+  const currentYearNum = new Date().getFullYear();
+
   // Filters
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'paid', 'unpaid'
+  const [monthFilter, setMonthFilter] = useState(currentMonthNum.toString()); // Default: current month so past invoices don't fill the table!
+  const [yearFilter, setYearFilter] = useState(currentYearNum.toString());
 
   // Generate Modal State
-  const [genMonth, setGenMonth] = useState(new Date().getMonth() + 1);
-  const [genYear, setGenYear] = useState(new Date().getFullYear());
+  const [genMonth, setGenMonth] = useState(currentMonthNum);
+  const [genYear, setGenYear] = useState(currentYearNum);
   const [generating, setGenerating] = useState(false);
 
   const [message, setMessage] = useState(null);
@@ -59,6 +64,9 @@ const Finance = () => {
       if (res.data?.success) {
         setMessage({ type: 'success', text: res.data.message || 'Invoice bulan ini berhasil dibuat!' });
         setShowGenerateModal(false);
+        // Switch month filter to generated month to view results cleanly
+        setMonthFilter(genMonth.toString());
+        setYearFilter(genYear.toString());
         fetchFinanceData();
       }
     } catch (err) {
@@ -141,13 +149,16 @@ const Finance = () => {
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+    const matchesMonth = monthFilter === 'all' || inv.month === parseInt(monthFilter);
+    const matchesYear = yearFilter === 'all' || inv.year === parseInt(yearFilter);
+
     const term = search.toLowerCase();
     const invNo = inv.invoice_number?.toLowerCase() || '';
     const studentName = inv.student?.name?.toLowerCase() || '';
     const parentName = inv.student?.parent_name?.toLowerCase() || '';
     const matchesSearch = invNo.includes(term) || studentName.includes(term) || parentName.includes(term);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesMonth && matchesYear && matchesSearch;
   });
 
   const totalPaidAmount = invoices
@@ -239,9 +250,9 @@ const Finance = () => {
             📑 Daftar Invoice Les per Wali Murid ({filteredInvoices.length})
           </h3>
 
-          {/* Filters */}
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', width: '220px' }}>
+          {/* Filters & Refresh Action */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ position: 'relative', width: '200px' }}>
               <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
@@ -253,9 +264,38 @@ const Finance = () => {
               />
             </div>
 
+            {/* Filter Bulan (Default: Bulan Ini) */}
             <select
               className="form-select"
-              style={{ width: '150px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              style={{ width: '140px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+            >
+              <option value="all">Semua Bulan</option>
+              {[...Array(12)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Bulan {i + 1} ({new Date(2026, i, 1).toLocaleString('id-ID', { month: 'long' })})
+                </option>
+              ))}
+            </select>
+
+            {/* Filter Tahun */}
+            <select
+              className="form-select"
+              style={{ width: '100px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+              value={yearFilter}
+              onChange={(e) => setYearFilter(e.target.value)}
+            >
+              <option value="all">Semua Thn</option>
+              {[2024, 2025, 2026, 2027].map((yr) => (
+                <option key={yr} value={yr}>{yr}</option>
+              ))}
+            </select>
+
+            {/* Filter Status */}
+            <select
+              className="form-select"
+              style={{ width: '130px', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -263,13 +303,30 @@ const Finance = () => {
               <option value="paid">LUNAS</option>
               <option value="unpaid">BELUM BAYAR</option>
             </select>
+
+            {/* Refresh Data Button */}
+            <button
+              onClick={() => {
+                fetchFinanceData();
+              }}
+              className="btn btn-secondary"
+              style={{ padding: '0.45rem 0.8rem', fontSize: '0.825rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              title="Refresh Data Invoice"
+              disabled={loading}
+            >
+              <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
 
         {loading ? (
           <p style={{ color: '#64748b' }}>Memuat daftar invoice...</p>
         ) : filteredInvoices.length === 0 ? (
-          <p style={{ color: '#64748b' }}>Tidak ada invoice les yang sesuai dengan filter.</p>
+          <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#64748b' }}>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600 }}>Tidak ada invoice les yang sesuai dengan filter periode saat ini.</p>
+            <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Gunakan pilihan filter "Semua Bulan" atau tekan Refresh untuk melihat seluruh riwayat tagihan.</p>
+          </div>
         ) : (
           <div className="table-container">
             <table className="custom-table">
