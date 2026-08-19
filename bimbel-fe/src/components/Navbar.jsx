@@ -33,10 +33,8 @@ const Navbar = () => {
       top: 0,
       zIndex: 20
     }}>
-      {/* Page Title & Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-        <span style={{ color: '#64748b', fontWeight: 500 }}>SIKEL</span>
-        <ChevronRight size={14} color="#94a3b8" />
+      {/* Page Title */}
+      <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem' }}>
         <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>
           {getPageTitle(location.pathname)}
         </h2>
