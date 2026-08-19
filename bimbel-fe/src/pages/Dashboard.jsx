@@ -130,59 +130,95 @@ const Dashboard = () => {
         </div>
 
         <div className="grid-3">
-          {/* Card 1: Reguler (REG) */}
-          <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                  <BookOpen size={20} color="#2563eb" />
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Les Reguler</h4>
-                  <span className="badge badge-indigo">Kode: REG (90 mnt)</span>
-                </div>
-              </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563eb' }}>
-                {studentsByJenis.REG || 0} Sesi
-              </span>
-            </div>
-          </div>
+          {summary?.categories_breakdown && summary.categories_breakdown.length > 0 ? (
+            summary.categories_breakdown.map((cat) => {
+              const isPIH = cat.code.startsWith('PIH');
+              const isPIB = cat.code.startsWith('PIB');
+              const isREG = cat.code === 'REG';
 
-          {/* Card 2: Privat In House (PIH) */}
-          <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#f5f3ff', border: '1px solid #ddd6fe' }}>
-                  <Clock size={20} color="#7c3aed" />
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In House</h4>
-                  <span className="badge badge-purple">Kode: PIH (90 mnt)</span>
-                </div>
-              </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#7c3aed' }}>
-                {studentsByJenis.PIH || 0} Sesi
-              </span>
-            </div>
-          </div>
+              const badgeClass = isPIH ? 'badge-purple' : isPIB ? 'badge-emerald' : 'badge-indigo';
+              const iconColor = isPIH ? '#7c3aed' : isPIB ? '#059669' : '#2563eb';
+              const bgBox = isPIH ? '#f5f3ff' : isPIB ? '#ecfdf5' : '#eff6ff';
+              const borderBox = isPIH ? '#ddd6fe' : isPIB ? '#a7f3d0' : '#bfdbfe';
 
-          {/* Card 3: Privat In Bimbel (PIB) */}
-          <div className="glass-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0' }}>
-                  <Clock size={20} color="#059669" />
+              return (
+                <div key={cat.id || cat.code} className="glass-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: bgBox, border: `1px solid ${borderBox}` }}>
+                        {isREG ? <BookOpen size={20} color={iconColor} /> : <Clock size={20} color={iconColor} />}
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>{cat.name}</h4>
+                        <span className={`badge ${badgeClass}`}>
+                          Kode: {cat.code} ({cat.duration_minutes} mnt)
+                        </span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: iconColor }}>
+                      {cat.count || 0} Sesi
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In Bimbel</h4>
-                  <span className="badge badge-emerald">Kode: PIB (60 mnt)</span>
+              );
+            })
+          ) : (
+            <>
+              {/* Card 1: Reguler (REG) */}
+              <div className="glass-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                      <BookOpen size={20} color="#2563eb" />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Les Reguler</h4>
+                      <span className="badge badge-indigo">Kode: REG (90 mnt)</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563eb' }}>
+                    {studentsByJenis.REG || 0} Sesi
+                  </span>
                 </div>
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#059669' }}>
-                {studentsByJenis.PIB || 0} Sesi
-              </span>
-            </div>
-          </div>
+
+              {/* Card 2: Privat In House (PIH) */}
+              <div className="glass-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#f5f3ff', border: '1px solid #ddd6fe' }}>
+                      <Clock size={20} color="#7c3aed" />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In House</h4>
+                      <span className="badge badge-purple">Kode: PIH (90 mnt)</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#7c3aed' }}>
+                    {studentsByJenis.PIH || 0} Sesi
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 3: Privat In Bimbel (PIB) */}
+              <div className="glass-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <div style={{ padding: '0.5rem', borderRadius: '10px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+                      <Clock size={20} color="#059669" />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Privat In Bimbel</h4>
+                      <span className="badge badge-emerald">Kode: PIB (60 mnt)</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#059669' }}>
+                    {studentsByJenis.PIB || 0} Sesi
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
