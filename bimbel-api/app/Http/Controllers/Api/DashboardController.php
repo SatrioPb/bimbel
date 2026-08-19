@@ -51,7 +51,7 @@ class DashboardController extends Controller
                 'total_active_students' => $totalActiveStudents,
                 'total_tutors' => $totalTutors,
                 'attendances_this_month' => $attendancesCountThisMonth,
-                'income_this_month' => $incomeThisMonth,
+                'income_this_month' => (float)$incomeThisMonth,
             ],
         ]);
     }

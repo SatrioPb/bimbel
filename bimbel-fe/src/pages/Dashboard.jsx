@@ -73,7 +73,7 @@ const Dashboard = () => {
       }}>
         <div>
           <span className="badge badge-indigo" style={{ marginBottom: '0.5rem' }}>
-            <Sparkles size={13} /> SIKEL (Sistem Informasi Les & Bimbel)
+            <Sparkles size={13} /> BIMBEL BINTANG (Sistem Informasi Bimbingan Belajar)
           </span>
           <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#1e40af' }}>
             Selamat Datang di Dashboard Bimbel
@@ -109,7 +109,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Pemasukan Bulan Ini"
-          value={`Rp ${(summary?.income_this_month || 0).toLocaleString('id-ID')}`}
+          value={`Rp ${Number(summary?.income_this_month || 0).toLocaleString('id-ID')}`}
           icon={Wallet}
           color="amber"
           subtext="Rangkuman keuangan les"
