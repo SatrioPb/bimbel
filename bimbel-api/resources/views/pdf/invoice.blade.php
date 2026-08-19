@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
         @page {
             margin: 25px;
         }
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 12px;
+            font-family: 'Poppins', 'DejaVu Sans', sans-serif;
+            font-size: 11px;
             color: #1f2937;
             background-color: #ffffff;
             margin: 0;
@@ -28,27 +30,27 @@
             vertical-align: top;
         }
         .brand-title {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 26px;
-            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
             color: #111827;
             margin: 0 0 6px 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .brand-address {
-            font-size: 12px;
+            font-size: 11px;
             color: #374151;
             line-height: 1.4;
         }
         .recipient-box {
             margin-top: 20px;
-            font-size: 12px;
+            font-size: 11px;
             color: #1f2937;
             line-height: 1.4;
         }
         .recipient-title {
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
             color: #111827;
             margin-bottom: 4px;
@@ -56,8 +58,8 @@
         .invoice-banner {
             background-color: #555555;
             color: #ffffff;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 800;
             text-align: center;
             padding: 8px 15px;
             letter-spacing: 2px;
@@ -69,8 +71,8 @@
             margin-top: 8px;
         }
         .info-grid td {
-            padding: 5px 8px;
-            font-size: 12px;
+            padding: 6px 8px;
+            font-size: 11px;
             border-bottom: 1px solid #e5e7eb;
         }
         .info-grid tr td:first-child {
@@ -90,17 +92,17 @@
         .items-table th {
             background-color: #e5e7eb;
             color: #111827;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 12px;
-            padding: 10px;
+            font-size: 11px;
+            padding: 9px 10px;
             border-top: 1.5px solid #4b5563;
             border-bottom: 1.5px solid #4b5563;
         }
         .items-table td {
-            padding: 10px;
+            padding: 9px 10px;
             border-bottom: 1px solid #e5e7eb;
-            font-size: 12px;
+            font-size: 11px;
         }
         .items-table tr:nth-child(even) {
             background-color: #f9fafb;
@@ -116,32 +118,15 @@
         }
         .summary-table td {
             padding: 6px 10px;
-            font-size: 12px;
+            font-size: 11px;
         }
         .summary-table tr.total-row td {
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 13px;
             color: #111827;
             border-top: 2px solid #111827;
             border-bottom: 2px solid #111827;
             background-color: #f3f4f6;
-        }
-        .status-pill {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 4px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-        .status-paid {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .status-unpaid {
-            background-color: #ffe4e6;
-            color: #9f1239;
         }
         .clearfix::after {
             content: "";
@@ -152,7 +137,7 @@
             margin-top: 45px;
             border-top: 1px dashed #d1d5db;
             padding-top: 12px;
-            font-size: 11px;
+            font-size: 10.5px;
             color: #6b7280;
             text-align: center;
         }
@@ -201,14 +186,6 @@
                             <td>Jatuh Tempo</td>
                             <td>{{ $dueDate }}</td>
                         </tr>
-                        <tr>
-                            <td>Status</td>
-                            <td>
-                                <span class="status-pill {{ $invoice->status === 'paid' ? 'status-paid' : 'status-unpaid' }}">
-                                    {{ $invoice->status === 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
-                                </span>
-                            </td>
-                        </tr>
                     </table>
                 </td>
             </tr>
@@ -234,7 +211,7 @@
                                     - {{ $att->subject }}
                                 @endif
                             </td>
-                            <td style="text-align: center; font-weight: bold;">
+                            <td style="text-align: center; font-weight: 700;">
                                 {{ $att->lesCategory->code ?? 'LES' }}
                             </td>
                             <td style="text-align: right;">Rp {{ number_format($att->fee_per_session, 0, ',', '.') }}</td>
@@ -246,7 +223,7 @@
                         <td style="text-align: left;">
                             Bimbingan Belajar Les Periode Bulan {{ sprintf('%02d', $invoice->month) }}/{{ $invoice->year }}
                         </td>
-                        <td style="text-align: center; font-weight: bold;">
+                        <td style="text-align: center; font-weight: 700;">
                             {{ $invoice->student->jenis_les ?? 'LES' }}
                         </td>
                         <td style="text-align: right;">Rp {{ number_format($invoice->fee_per_session, 0, ',', '.') }}</td>
