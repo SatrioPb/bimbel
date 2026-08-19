@@ -70,6 +70,8 @@ class ReportController extends Controller
             'attendances' => $attendances,
             'student' => $student,
         ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
 
         return $pdf->download('Riwayat_Absensi_Murid_' . date('Ymd_His') . '.pdf');
     }
@@ -178,6 +180,8 @@ class ReportController extends Controller
             'attendances' => $attendances,
             'tutor' => $tutor,
         ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
 
         return $pdf->download('Riwayat_Mengajar_Guru_' . date('Ymd_His') . '.pdf');
     }

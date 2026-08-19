@@ -204,6 +204,8 @@ class FinanceController extends Controller
             'dueDate' => $dueDateFormatted,
             'termin' => '6 hari'
         ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
 
         $safeInvoiceNo = str_replace(['/', '\\'], '_', $invoice->invoice_number);
         return $pdf->download('Invoice_' . $safeInvoiceNo . '.pdf');
@@ -316,6 +318,8 @@ class FinanceController extends Controller
             'monthlyReport' => $data['monthly_report'],
             'totalIncome' => $data['total_income'],
         ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
 
         return $pdf->download('Laporan_Pemasukan_Keuangan_' . $year . '.pdf');
     }

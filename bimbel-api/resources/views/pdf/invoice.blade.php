@@ -6,11 +6,34 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfedw.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLEj6Z1xlEw.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 700;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7Z1xlEw.ttf') format('truetype');
+        }
+
+        * {
+            font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
+        }
+
         @page {
             margin: 25px;
         }
         body {
-            font-family: 'Poppins', 'DejaVu Sans', sans-serif;
+            font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
             font-size: 11px;
             color: #1f2937;
             background-color: #ffffff;

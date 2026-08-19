@@ -4,7 +4,32 @@
     <meta charset="utf-8">
     <title>Laporan Pemasukan Les Per Bulan</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfedw.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLEj6Z1xlEw.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 700;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7Z1xlEw.ttf') format('truetype');
+        }
+
+        * {
+            font-family: 'Poppins', Arial, sans-serif !important;
+        }
+
+        body { font-family: 'Poppins', Arial, sans-serif !important; font-size: 12px; color: #333; margin: 20px; }
         .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2b6cb0; padding-bottom: 10px; }
         .header h2 { margin: 0 0 5px 0; color: #2b6cb0; }
         .header p { margin: 0; font-size: 11px; color: #666; }
