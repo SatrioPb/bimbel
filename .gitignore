@@ -15,6 +15,12 @@ bimbel-api/storage/*.key
 bimbel-api/storage/logs/*.log
 bimbel-api/bootstrap/cache/*.php
 
+# Temporary Screenshots & Images
+*.jpg
+*.jpeg
+*.png
+Screenshot*
+
 # IDE & OS files
 .idea/
 .vscode/
