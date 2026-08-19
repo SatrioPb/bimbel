@@ -390,18 +390,6 @@ const Database = () => {
         ) : activeTab === 'categories' ? (
           /* Table Kategori Les */
           <div>
-            <div style={{
-              padding: '0.65rem 0.85rem',
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: '8px',
-              color: '#1d4ed8',
-              fontSize: '0.825rem',
-              marginBottom: '1rem'
-            }}>
-              💡 <strong>Tarif Les:</strong> PIH 90m: Rp 30rb, PIH 60m: Rp 25rb | PIB 90m: Rp 25rb, PIB 60m: Rp 20rb | REG: Rp 15rb.
-            </div>
-
             <div className="table-container">
               <table className="custom-table">
                 <thead>
