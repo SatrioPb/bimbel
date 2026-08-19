@@ -233,11 +233,10 @@
                                 @if($att->subject)
                                     - {{ $att->subject }}
                                 @endif
-                                @if($att->lesCategory)
-                                    ({{ $att->lesCategory->name }})
-                                @endif
                             </td>
-                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center; font-weight: bold;">
+                                {{ $att->lesCategory->code ?? 'LES' }}
+                            </td>
                             <td style="text-align: right;">Rp {{ number_format($att->fee_per_session, 0, ',', '.') }}</td>
                             <td style="text-align: right;">Rp {{ number_format($att->fee_per_session, 0, ',', '.') }}</td>
                         </tr>
@@ -247,7 +246,9 @@
                         <td style="text-align: left;">
                             Bimbingan Belajar Les Periode Bulan {{ sprintf('%02d', $invoice->month) }}/{{ $invoice->year }}
                         </td>
-                        <td style="text-align: center;">{{ $invoice->total_sessions }}</td>
+                        <td style="text-align: center; font-weight: bold;">
+                            {{ $invoice->student->jenis_les ?? 'LES' }}
+                        </td>
                         <td style="text-align: right;">Rp {{ number_format($invoice->fee_per_session, 0, ',', '.') }}</td>
                         <td style="text-align: right;">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
                     </tr>
