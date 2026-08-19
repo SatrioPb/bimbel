@@ -191,7 +191,7 @@ class FinanceController extends Controller
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        $printedCarbon = $invoice->created_at ? \Carbon\Carbon::parse($invoice->created_at) : \Carbon\Carbon::now();
+        $printedCarbon = \Carbon\Carbon::now();
         $dueCarbon = $printedCarbon->copy()->addDays(6);
 
         $printedDateFormatted = $printedCarbon->format('d') . ' ' . ($monthsIndo[(int)$printedCarbon->format('m')] ?? '') . ' ' . $printedCarbon->format('Y');
