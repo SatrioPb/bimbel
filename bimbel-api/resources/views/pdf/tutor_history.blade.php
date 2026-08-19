@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>BIMBEL LEARNING CENTER</h2>
+        <h2>BIMBEL BINTANG</h2>
         <p>Laporan Riwayat Mengajar Guru Les</p>
     </div>
 

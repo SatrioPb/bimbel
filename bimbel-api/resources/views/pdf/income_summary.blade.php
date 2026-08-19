@@ -19,7 +19,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>BIMBEL LEARNING CENTER</h2>
+        <h2>BIMBEL BINTANG</h2>
         <p>Laporan Rekapitulasi Pemasukan Keuangan Les Per Bulan (Tahun {{ $year }})</p>
     </div>
 
