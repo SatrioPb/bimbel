@@ -2,121 +2,283 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice Les {{ $invoice->invoice_number }}</title>
+    <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #2d3748; margin: 20px; }
-        .invoice-box { border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; }
-        .header { margin-bottom: 20px; border-bottom: 2px solid #3182ce; padding-bottom: 15px; }
-        .header table { width: 100%; }
-        .title { font-size: 22px; font-weight: bold; color: #2b6cb0; margin: 0; }
-        .inv-no { font-size: 14px; font-weight: bold; color: #4a5568; margin-top: 5px; }
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-        .status-paid { background-color: #c6f6d5; color: #22543d; }
-        .status-unpaid { background-color: #fed7d7; color: #742a2a; }
-        .section-title { font-weight: bold; font-size: 13px; color: #2b6cb0; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px; margin: 15px 0 10px 0; }
-        .info-table { width: 100%; margin-bottom: 20px; }
-        .info-table td { padding: 4px 0; font-size: 11px; }
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .items-table th, .items-table td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; }
-        .items-table th { background-color: #ebf8ff; color: #2b6cb0; }
-        .summary-table { width: 40%; float: right; margin-top: 15px; border-collapse: collapse; }
-        .summary-table td { padding: 6px; text-align: right; }
-        .summary-table tr.total td { font-weight: bold; font-size: 14px; color: #2b6cb0; border-top: 2px solid #2b6cb0; }
-        .clearfix::after { content: ""; clear: both; display: table; }
-        .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 10px; color: #718096; text-align: center; }
+        @page {
+            margin: 25px;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #1f2937;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .header-table td {
+            vertical-align: top;
+        }
+        .brand-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 26px;
+            font-weight: bold;
+            color: #111827;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .brand-address {
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.4;
+        }
+        .recipient-box {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+        .recipient-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .invoice-banner {
+            background-color: #555555;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 15px;
+            letter-spacing: 2px;
+            border-radius: 2px;
+        }
+        .info-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .info-grid td {
+            padding: 5px 8px;
+            font-size: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-grid tr td:first-child {
+            color: #374151;
+            font-weight: 500;
+        }
+        .info-grid tr td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #111827;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .items-table th {
+            background-color: #e5e7eb;
+            color: #111827;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            padding: 10px;
+            border-top: 1.5px solid #4b5563;
+            border-bottom: 1.5px solid #4b5563;
+        }
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+        .items-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .summary-wrapper {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .summary-table {
+            width: 45%;
+            float: right;
+            border-collapse: collapse;
+        }
+        .summary-table td {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .summary-table tr.total-row td {
+            font-weight: bold;
+            font-size: 14px;
+            color: #111827;
+            border-top: 2px solid #111827;
+            border-bottom: 2px solid #111827;
+            background-color: #f3f4f6;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-unpaid {
+            background-color: #ffe4e6;
+            color: #9f1239;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .footer-note {
+            margin-top: 45px;
+            border-top: 1px dashed #d1d5db;
+            padding-top: 12px;
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div class="invoice-box">
-        <div class="header">
-            <table>
-                <tr>
-                    <td>
-                        <h1 class="title">BIMBEL LEARNING CENTER</h1>
-                        <p style="margin: 3px 0; font-size: 11px; color: #718096;">Kuitansi & Invoice Tagihan Les Bulanan</p>
-                    </td>
-                    <td style="text-align: right;">
-                        <div class="inv-no">INVOICE: {{ $invoice->invoice_number }}</div>
-                        <div style="margin-top: 5px;">
-                            <span class="status-badge {{ $invoice->status === 'paid' ? 'status-paid' : 'status-unpaid' }}">
-                                {{ $invoice->status === 'paid' ? 'LUNAS (PAID)' : 'BELUM DIBAYAR (UNPAID)' }}
-                            </span>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
+    <div class="container">
+        <!-- Header Table -->
+        <table class="header-table">
+            <tr>
+                <td width="55%">
+                    <div class="brand-title">BIMBEL BINTANG</div>
+                    <div class="brand-address">
+                        Grogol Tengah RT: 3/4 Bakalankrapyak<br>
+                        Kaliwungu Kudus<br>
+                        HP: 0888-2538-604
+                    </div>
 
-        <div class="info-table">
-            <table>
-                <tr>
-                    <td width="15%"><strong>Nama Murid</strong></td>
-                    <td width="35%">: {{ $invoice->student->name ?? '-' }} ({{ $invoice->student->student_code ?? '-' }})</td>
-                    <td width="15%"><strong>Periode Tagihan</strong></td>
-                    <td width="35%">: {{ date('F', mktime(0, 0, 0, $invoice->month, 10)) }} {{ $invoice->year }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Wali Murid</strong></td>
-                    <td>: {{ $invoice->student->parent_name ?? '-' }}</td>
-                    <td><strong>No. HP/WA</strong></td>
-                    <td>: {{ $invoice->student->parent_phone ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Jenis Les</strong></td>
-                    <td>: {{ isset($invoice->student) ? strtoupper(str_replace('_', ' ', $invoice->student->jenis_les)) : '-' }}</td>
-                    <td><strong>Durasi Per Sesi</strong></td>
-                    <td>: {{ $invoice->student->duration_minutes ?? 90 }} Menit</td>
-                </tr>
-            </table>
-        </div>
+                    <div class="recipient-box">
+                        <div class="recipient-title">TAGIHAN KEPADA:</div>
+                        <strong>{{ $invoice->student->name ?? '-' }}</strong><br>
+                        @if(!empty($invoice->student->parent_name))
+                            Wali: {{ $invoice->student->parent_name }}<br>
+                        @endif
+                        {{ $invoice->student->address ?? 'Alamat tidak diisi' }}<br>
+                        {{ $invoice->student->parent_phone ?? '-' }}
+                    </div>
+                </td>
 
-        <div class="section-title">RINCIAN PERTEMUAN / ABSENSI</div>
+                <td width="45%">
+                    <div class="invoice-banner">INVOICE</div>
+                    <table class="info-grid">
+                        <tr>
+                            <td>Tanggal</td>
+                            <td>{{ $printedDate }}</td>
+                        </tr>
+                        <tr>
+                            <td>No.</td>
+                            <td>{{ $invoice->invoice_number }}</td>
+                        </tr>
+                        <tr>
+                            <td>Termin</td>
+                            <td>{{ $termin ?? '6 hari' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Jatuh Tempo</td>
+                            <td>{{ $dueDate }}</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>
+                                <span class="status-pill {{ $invoice->status === 'paid' ? 'status-paid' : 'status-unpaid' }}">
+                                    {{ $invoice->status === 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Table Rincian Pertemuan Les -->
         <table class="items-table">
             <thead>
                 <tr>
-                    <th width="8%">No</th>
-                    <th>Deskripsi Layanan Les</th>
-                    <th width="15%" style="text-align: center;">Jumlah Sesi</th>
-                    <th width="20%" style="text-align: right;">Tarif Per Sesi</th>
-                    <th width="20%" style="text-align: right;">Subtotal</th>
+                    <th style="text-align: left;">TANGGAL LES</th>
+                    <th width="12%" style="text-align: center;">TM</th>
+                    <th width="22%" style="text-align: right;">SPP</th>
+                    <th width="25%" style="text-align: right;">SUB TOTAL</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>
-                        Les {{ isset($invoice->student) ? strtoupper(str_replace('_', ' ', $invoice->student->jenis_les)) : 'Regular' }}
-                        ({{ $invoice->student->duration_minutes ?? 90 }} Menit) - Periode {{ sprintf('%02d', $invoice->month) }}/{{ $invoice->year }}
-                    </td>
-                    <td style="text-align: center;">{{ $invoice->total_sessions }} Pertemuan</td>
-                    <td style="text-align: right;">Rp {{ number_format($invoice->fee_per_session, 0, ',', '.') }}</td>
-                    <td style="text-align: right;">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
-                </tr>
+                @if(isset($attendances) && count($attendances) > 0)
+                    @foreach($attendances as $att)
+                        <tr>
+                            <td style="text-align: left;">
+                                <strong>{{ date('d/m/Y', strtotime($att->date)) }}</strong>
+                                @if($att->subject)
+                                    - {{ $att->subject }}
+                                @endif
+                                @if($att->lesCategory)
+                                    ({{ $att->lesCategory->name }})
+                                @endif
+                            </td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: right;">Rp {{ number_format($att->fee_per_session, 0, ',', '.') }}</td>
+                            <td style="text-align: right;">Rp {{ number_format($att->fee_per_session, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td style="text-align: left;">
+                            Bimbingan Belajar Les Periode Bulan {{ sprintf('%02d', $invoice->month) }}/{{ $invoice->year }}
+                        </td>
+                        <td style="text-align: center;">{{ $invoice->total_sessions }}</td>
+                        <td style="text-align: right;">Rp {{ number_format($invoice->fee_per_session, 0, ',', '.') }}</td>
+                        <td style="text-align: right;">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
 
-        <div class="clearfix">
+        <!-- Summary Calculation -->
+        <div class="summary-wrapper clearfix">
             <table class="summary-table">
                 <tr>
-                    <td>Subtotal:</td>
-                    <td>Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
+                    <td style="text-align: right; color: #4b5563;">Subtotal ({{ $invoice->total_sessions }} TM):</td>
+                    <td style="text-align: right; font-weight: 600;">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
                 </tr>
                 @if($invoice->discount > 0)
                 <tr>
-                    <td>Potongan/Diskon:</td>
-                    <td>- Rp {{ number_format($invoice->discount, 0, ',', '.') }}</td>
+                    <td style="text-align: right; color: #dc2626;">Diskon:</td>
+                    <td style="text-align: right; color: #dc2626;">- Rp {{ number_format($invoice->discount, 0, ',', '.') }}</td>
                 </tr>
                 @endif
-                <tr class="total">
-                    <td>TOTAL:</td>
-                    <td>Rp {{ number_format($invoice->final_amount, 0, ',', '.') }}</td>
+                <tr class="total-row">
+                    <td style="text-align: right;">TOTAL TAGIHAN:</td>
+                    <td style="text-align: right;">Rp {{ number_format($invoice->final_amount, 0, ',', '.') }}</td>
                 </tr>
             </table>
         </div>
 
-        <div class="footer">
-            Terima kasih atas kepercayaan Anda bimbingan belajar di Bimbel Learning Center.<br>
-            Untuk informasi pembayaran & konfirmasi silakan hubungi Administrasi Bimbel.
+        <!-- Footer Note -->
+        <div class="footer-note">
+            Pembayaran dapat dilakukan melalui transfer atau tunai paling lambat tanggal <strong>{{ $dueDate }}</strong> (Jatuh Tempo).<br>
+            Terima kasih atas kepercayaannya bimbingan belajar di <strong>BIMBEL BINTANG</strong>.
         </div>
     </div>
 </body>

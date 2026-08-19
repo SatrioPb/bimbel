@@ -179,7 +179,32 @@ class FinanceController extends Controller
     {
         $invoice = Invoice::with('student')->findOrFail($id);
 
-        $pdf = Pdf::loadView('pdf.invoice', ['invoice' => $invoice]);
+        $attendances = Attendance::where('student_id', $invoice->student_id)
+            ->whereMonth('date', $invoice->month)
+            ->whereYear('date', $invoice->year)
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $monthsIndo = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $printedCarbon = $invoice->created_at ? \Carbon\Carbon::parse($invoice->created_at) : \Carbon\Carbon::now();
+        $dueCarbon = $printedCarbon->copy()->addDays(6);
+
+        $printedDateFormatted = $printedCarbon->format('d') . ' ' . ($monthsIndo[(int)$printedCarbon->format('m')] ?? '') . ' ' . $printedCarbon->format('Y');
+        $dueDateFormatted = $dueCarbon->format('d') . ' ' . ($monthsIndo[(int)$dueCarbon->format('m')] ?? '') . ' ' . $dueCarbon->format('Y');
+
+        $pdf = Pdf::loadView('pdf.invoice', [
+            'invoice' => $invoice,
+            'attendances' => $attendances,
+            'printedDate' => $printedDateFormatted,
+            'dueDate' => $dueDateFormatted,
+            'termin' => '6 hari'
+        ]);
+
         $safeInvoiceNo = str_replace(['/', '\\'], '_', $invoice->invoice_number);
         return $pdf->download('Invoice_' . $safeInvoiceNo . '.pdf');
     }
