@@ -92,7 +92,7 @@ const Login = () => {
             <GraduationCap size={28} />
           </div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-            SIKEL BIMBEL
+            BIMBEL BINTANG
           </h1>
           <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
             Silakan masuk untuk mengakses panel informasi les
