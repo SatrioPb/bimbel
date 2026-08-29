@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck } from 'lucide-react';
+import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const Database = () => {
   const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories', 'teachers'
@@ -10,6 +10,16 @@ const Database = () => {
   const [categories, setCategories] = useState([]);
   const [teacherAccounts, setTeacherAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Delete Confirmation Modal & Alert Banner State
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    show: false,
+    id: null,
+    type: '',
+    name: ''
+  });
+  const [deleting, setDeleting] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   // Student Form Modal State
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -229,14 +239,38 @@ const Database = () => {
     }
   };
 
-  // Delete Item
-  const handleDelete = async (id, type) => {
-    if (!window.confirm(`Hapus data ${type} ini?`)) return;
+  // Request Delete Confirmation Modal
+  const handleDeleteRequest = (id, type, name = '') => {
+    setDeleteConfirm({
+      show: true,
+      id,
+      type,
+      name: name || 'data ini'
+    });
+  };
+
+  // Perform Delete Action
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id || !deleteConfirm.type) return;
+    setDeleting(true);
+    setAlertMessage(null);
+
     try {
-      await apiClient.delete(`/database/${type}/${id}`);
+      await apiClient.delete(`/database/${deleteConfirm.type}/${deleteConfirm.id}`);
+      setDeleteConfirm({ show: false, id: null, type: '', name: '' });
+      setAlertMessage({
+        type: 'success',
+        text: `Data ${deleteConfirm.name} berhasil dihapus dari database.`
+      });
       fetchData();
     } catch (err) {
-      alert(`Gagal menghapus data: ${err.message}`);
+      setDeleteConfirm({ show: false, id: null, type: '', name: '' });
+      setAlertMessage({
+        type: 'danger',
+        text: err.response?.data?.message || `Gagal menghapus data: ${err.message}`
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -281,6 +315,34 @@ const Database = () => {
 
       {/* Main Table Card */}
       <div className="glass-card">
+        {/* Alert Feedback Banner */}
+        {alertMessage && (
+          <div style={{
+            padding: '0.75rem 1rem',
+            marginBottom: '1.25rem',
+            borderRadius: '10px',
+            backgroundColor: alertMessage.type === 'success' ? '#ecfdf5' : '#fff1f2',
+            border: `1px solid ${alertMessage.type === 'success' ? '#a7f3d0' : '#fecdd3'}`,
+            color: alertMessage.type === 'success' ? '#047857' : '#be123c',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.85rem',
+            fontWeight: 600
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {alertMessage.type === 'success' ? <CheckCircle size={17} color="#059669" /> : <AlertTriangle size={17} color="#dc2626" />}
+              <span>{alertMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setAlertMessage(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="tabs-container">
           <button
@@ -339,7 +401,7 @@ const Database = () => {
                           <Edit2 size={14} color="#2563eb" />
                           <span>Edit</span>
                         </button>
-                        <button onClick={() => handleDelete(s.id, 'students')} className="btn btn-danger btn-sm">
+                        <button onClick={() => handleDeleteRequest(s.id, 'students', `Murid ${s.name}`)} className="btn btn-danger btn-sm" title="Hapus Data Murid">
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -376,7 +438,7 @@ const Database = () => {
                             <Edit2 size={14} color="#7c3aed" />
                             <span>Edit</span>
                           </button>
-                          <button onClick={() => handleDelete(t.id, 'tutors')} className="btn btn-danger btn-sm">
+                          <button onClick={() => handleDeleteRequest(t.id, 'tutors', `Guru ${t.name}`)} className="btn btn-danger btn-sm" title="Hapus Data Guru">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -421,7 +483,7 @@ const Database = () => {
                               <Edit2 size={14} color="#2563eb" />
                               <span>Edit</span>
                             </button>
-                            <button onClick={() => handleDelete(c.id, 'les-categories')} className="btn btn-danger btn-sm">
+                            <button onClick={() => handleDeleteRequest(c.id, 'les-categories', `Kategori ${c.name}`)} className="btn btn-danger btn-sm" title="Hapus Kategori Les">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -461,7 +523,7 @@ const Database = () => {
                           <Edit2 size={14} color="#059669" />
                           <span>Edit</span>
                         </button>
-                        <button onClick={() => handleDelete(acc.id, 'teacher-accounts')} className="btn btn-danger btn-sm">
+                        <button onClick={() => handleDeleteRequest(acc.id, 'teacher-accounts', `Akun Guru ${acc.name}`)} className="btn btn-danger btn-sm" title="Hapus Akun Guru">
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -752,6 +814,68 @@ const Database = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Delete Confirmation */}
+      <Modal
+        isOpen={deleteConfirm.show}
+        onClose={() => setDeleteConfirm({ show: false, id: null, type: '', name: '' })}
+        title="⚠️ Konfirmasi Hapus Data Database"
+      >
+        <div style={{ padding: '0.25rem 0' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#fff1f2',
+            border: '1px solid #fecdd3',
+            borderRadius: '12px',
+            color: '#9f1239',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              backgroundColor: '#ffe4e6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <AlertTriangle size={24} color="#dc2626" />
+            </div>
+            <div>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#be123c' }}>
+                Apakah Anda Yakin Ingin Menghapus Data Ini?
+              </h4>
+              <p style={{ fontSize: '0.825rem', margin: '0.25rem 0 0 0', color: '#e11d48' }}>
+                Tindakan ini akan menghapus data <strong>{deleteConfirm.name}</strong> secara permanen dari database bimbel.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setDeleteConfirm({ show: false, id: null, type: '', name: '' })}
+              disabled={deleting}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={confirmDelete}
+              disabled={deleting}
+            >
+              <Trash2 size={16} />
+              <span>{deleting ? 'Menghapus...' : 'Ya, Hapus Data'}</span>
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
