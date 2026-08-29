@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, Lock, Mail, Shield, UserCheck, AlertCircle } from 'lucide-react';
+import { GraduationCap, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const { user, login } = useAuth();
@@ -25,26 +25,6 @@ const Login = () => {
 
     try {
       const res = await login(email, password);
-      if (res.success) {
-        navigate('/', { replace: true });
-      } else {
-        setError(res.message || 'Login gagal. Periksa kembali email dan password.');
-      }
-    } catch (err) {
-      setError('Terjadi kesalahan saat menghubungi server.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = async (roleEmail) => {
-    setEmail(roleEmail);
-    setPassword('password123');
-    setError(null);
-    setLoading(true);
-
-    try {
-      const res = await login(roleEmail, 'password123');
       if (res.success) {
         navigate('/', { replace: true });
       } else {
@@ -144,42 +124,12 @@ const Login = () => {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.7rem', fontSize: '0.9rem', marginBottom: '1.75rem' }}
+            style={{ width: '100%', padding: '0.7rem', fontSize: '0.9rem', marginBottom: '0' }}
             disabled={loading}
           >
             {loading ? 'Memproses Authentikasi...' : 'Masuk ke Dashboard'}
           </button>
         </form>
-
-        {/* Quick Login Helper Buttons */}
-        <div style={{ paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
-          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.75rem' }}>
-            Pilih Akses Cepat Login
-          </p>
-          <div className="grid-2">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@bimbel.com')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'center' }}
-              disabled={loading}
-            >
-              <Shield size={14} color="#2563eb" />
-              <span>Login Admin</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('guru@bimbel.com')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'center' }}
-              disabled={loading}
-            >
-              <UserCheck size={14} color="#059669" />
-              <span>Login Guru</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
