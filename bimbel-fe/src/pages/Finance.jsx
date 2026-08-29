@@ -39,8 +39,8 @@ const Finance = () => {
     setLoading(true);
     try {
       const [invRes, incRes] = await Promise.all([
-        apiClient.get('/finance/invoices'),
-        apiClient.get('/finance/income-summary')
+        apiClient.getWithCache('/finance/invoices'),
+        apiClient.getWithCache('/finance/income-summary')
       ]);
 
       if (invRes.data?.success) setInvoices(invRes.data.data);

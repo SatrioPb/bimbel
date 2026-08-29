@@ -34,10 +34,10 @@ const Attendance = () => {
     setLoading(true);
     try {
       const [attRes, studRes, tutRes, catRes] = await Promise.all([
-        apiClient.get('/attendances'),
-        apiClient.get('/students/options').catch(() => ({ data: { data: [] } })),
-        apiClient.get('/tutors/options').catch(() => ({ data: { data: [] } })),
-        apiClient.get('/les-categories/options').catch(() => ({ data: { data: [] } }))
+        apiClient.getWithCache('/attendances'),
+        apiClient.getWithCache('/students/options').catch(() => ({ data: { data: [] } })),
+        apiClient.getWithCache('/tutors/options').catch(() => ({ data: { data: [] } })),
+        apiClient.getWithCache('/les-categories/options').catch(() => ({ data: { data: [] } }))
       ]);
 
       if (attRes.data?.success) setAttendances(attRes.data.data);

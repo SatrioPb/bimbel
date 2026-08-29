@@ -16,7 +16,7 @@ const Dashboard = () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await apiClient.get('/dashboard/summary');
+      const res = await apiClient.getWithCache('/dashboard/summary');
       if (res.data?.success) {
         setSummary(res.data.data);
       }

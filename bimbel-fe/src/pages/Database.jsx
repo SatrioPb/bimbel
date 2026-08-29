@@ -60,16 +60,16 @@ const Database = () => {
     setLoading(true);
     try {
       if (activeTab === 'students') {
-        const res = await apiClient.get('/database/students');
+        const res = await apiClient.getWithCache('/database/students');
         if (res.data?.success) setStudents(res.data.data);
       } else if (activeTab === 'tutors') {
-        const res = await apiClient.get('/database/tutors');
+        const res = await apiClient.getWithCache('/database/tutors');
         if (res.data?.success) setTutors(res.data.data);
       } else if (activeTab === 'categories') {
-        const res = await apiClient.get('/database/les-categories');
+        const res = await apiClient.getWithCache('/database/les-categories');
         if (res.data?.success) setCategories(res.data.data);
       } else if (activeTab === 'teachers') {
-        const res = await apiClient.get('/database/teacher-accounts');
+        const res = await apiClient.getWithCache('/database/teacher-accounts');
         if (res.data?.success) setTeacherAccounts(res.data.data);
       }
     } catch (err) {

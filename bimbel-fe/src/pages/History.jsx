@@ -28,8 +28,8 @@ const History = () => {
   const fetchFilterOptions = async () => {
     try {
       const [tRes, sRes] = await Promise.all([
-        apiClient.get('/tutors/options').catch(() => ({ data: { data: [] } })),
-        apiClient.get('/students/options').catch(() => ({ data: { data: [] } }))
+        apiClient.getWithCache('/tutors/options').catch(() => ({ data: { data: [] } })),
+        apiClient.getWithCache('/students/options').catch(() => ({ data: { data: [] } }))
       ]);
       if (tRes.data?.success) setTutors(tRes.data.data);
       if (sRes.data?.success) setStudents(sRes.data.data);
@@ -48,7 +48,7 @@ const History = () => {
       if (historyTab === 'tutors' && selectedTutorId) params.tutor_id = selectedTutorId;
       if (historyTab === 'students' && selectedStudentId) params.student_id = selectedStudentId;
 
-      const res = await apiClient.get(endpoint, { params });
+      const res = await apiClient.getWithCache(endpoint, { params });
       if (res.data?.success) {
         setAttendances(res.data.data);
       }
