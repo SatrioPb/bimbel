@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
-import { History as HistoryIcon, FileText, FileSpreadsheet, Filter, Search, Calendar, UserCheck } from 'lucide-react';
+import Modal from '../components/Modal';
+import { History as HistoryIcon, FileText, FileSpreadsheet, Plus, Edit2, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const History = () => {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [historyTab, setHistoryTab] = useState('tutors'); // 'tutors' or 'students'
   const [attendances, setAttendances] = useState([]);
   const [tutors, setTutors] = useState([]);
   const [students, setStudents] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -16,6 +20,30 @@ const History = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedTutorId, setSelectedTutorId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
+
+  // Form Modal State (Admin Add/Edit)
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingAttendance, setEditingAttendance] = useState(null);
+  const [form, setForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    tutor_id: '',
+    student_id: '',
+    les_category_id: '',
+    subject: '',
+    start_time: '15:00',
+    end_time: '16:30',
+    notes: ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  // Delete Confirmation Modal & Alert Banner State
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    show: false,
+    id: null,
+    title: ''
+  });
+  const [deleting, setDeleting] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   useEffect(() => {
     fetchFilterOptions();
@@ -27,12 +55,14 @@ const History = () => {
 
   const fetchFilterOptions = async () => {
     try {
-      const [tRes, sRes] = await Promise.all([
+      const [tRes, sRes, cRes] = await Promise.all([
         apiClient.getWithCache('/tutors/options').catch(() => ({ data: { data: [] } })),
-        apiClient.getWithCache('/students/options').catch(() => ({ data: { data: [] } }))
+        apiClient.getWithCache('/students/options').catch(() => ({ data: { data: [] } })),
+        apiClient.getWithCache('/les-categories/options').catch(() => ({ data: { data: [] } }))
       ]);
       if (tRes.data?.success) setTutors(tRes.data.data);
       if (sRes.data?.success) setStudents(sRes.data.data);
+      if (cRes.data?.success) setCategories(cRes.data.data);
     } catch (err) {
       console.error('Error fetching filter options:', err);
     }
@@ -88,6 +118,102 @@ const History = () => {
     }
   };
 
+  // Form Modal Handlers (Admin Create / Edit)
+  const handleOpenFormModal = (att = null) => {
+    if (att) {
+      setEditingAttendance(att);
+      setForm({
+        date: att.date || new Date().toISOString().split('T')[0],
+        tutor_id: att.tutor_id || '',
+        student_id: att.student_id || '',
+        les_category_id: att.les_category_id || '',
+        subject: att.subject || '',
+        start_time: att.start_time || '15:00',
+        end_time: att.end_time || '16:30',
+        notes: att.notes || ''
+      });
+    } else {
+      setEditingAttendance(null);
+      setForm({
+        date: new Date().toISOString().split('T')[0],
+        tutor_id: tutors[0]?.id || '',
+        student_id: students[0]?.id || '',
+        les_category_id: categories[0]?.id || '',
+        subject: '',
+        start_time: '15:00',
+        end_time: '16:30',
+        notes: ''
+      });
+    }
+    setShowFormModal(true);
+  };
+
+  const handleSaveForm = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setAlertMessage(null);
+
+    try {
+      if (editingAttendance) {
+        await apiClient.put(`/attendances/${editingAttendance.id}`, form);
+        setAlertMessage({
+          type: 'success',
+          text: 'Data riwayat presensi berhasil diperbarui.'
+        });
+      } else {
+        await apiClient.post('/attendances', form);
+        setAlertMessage({
+          type: 'success',
+          text: 'Data riwayat presensi baru berhasil ditambahkan.'
+        });
+      }
+      setShowFormModal(false);
+      fetchHistory();
+    } catch (err) {
+      setAlertMessage({
+        type: 'danger',
+        text: err.response?.data?.message || 'Gagal menyimpan data riwayat presensi.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Delete Confirmation Handlers
+  const handleDeleteRequest = (att) => {
+    const tutorName = att.tutor?.name || '-';
+    const studentName = att.student?.name || '-';
+    setDeleteConfirm({
+      show: true,
+      id: att.id,
+      title: `Sesi ${att.date} (Guru: ${tutorName} / Murid: ${studentName})`
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id) return;
+    setDeleting(true);
+    setAlertMessage(null);
+
+    try {
+      await apiClient.delete(`/attendances/${deleteConfirm.id}`);
+      setDeleteConfirm({ show: false, id: null, title: '' });
+      setAlertMessage({
+        type: 'success',
+        text: 'Data riwayat presensi berhasil dihapus.'
+      });
+      fetchHistory();
+    } catch (err) {
+      setDeleteConfirm({ show: false, id: null, title: '' });
+      setAlertMessage({
+        type: 'danger',
+        text: err.response?.data?.message || `Gagal menghapus data: ${err.message}`
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
       {/* Top Banner & Export Actions */}
@@ -102,7 +228,14 @@ const History = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {isAdmin && (
+            <button onClick={() => handleOpenFormModal()} className="btn btn-primary">
+              <Plus size={18} />
+              <span>Tambah Riwayat Baru</span>
+            </button>
+          )}
+
           <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: '#fecdd3', color: '#be123c' }}>
             <FileText size={18} />
             <span>Export PDF</span>
@@ -116,7 +249,35 @@ const History = () => {
 
       {/* Main Content Card */}
       <div className="glass-card">
-        {/* Tabs */}
+        {/* Alert Feedback Banner */}
+        {alertMessage && (
+          <div style={{
+            padding: '0.75rem 1rem',
+            marginBottom: '1.25rem',
+            borderRadius: '10px',
+            backgroundColor: alertMessage.type === 'success' ? '#ecfdf5' : '#fff1f2',
+            border: `1px solid ${alertMessage.type === 'success' ? '#a7f3d0' : '#fecdd3'}`,
+            color: alertMessage.type === 'success' ? '#047857' : '#be123c',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.85rem',
+            fontWeight: 600
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {alertMessage.type === 'success' ? <CheckCircle size={17} color="#059669" /> : <AlertTriangle size={17} color="#dc2626" />}
+              <span>{alertMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setAlertMessage(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Tabs & Filters Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div className="tabs-container" style={{ margin: 0 }}>
             <button
@@ -208,6 +369,7 @@ const History = () => {
                   <th>Mata Pelajaran</th>
                   <th>Durasi</th>
                   <th>Catatan</th>
+                  {isAdmin && <th style={{ textAlign: 'center' }}>Aksi</th>}
                 </tr>
               </thead>
               <tbody>
@@ -224,6 +386,27 @@ const History = () => {
                     <td>{att.subject || '-'}</td>
                     <td>{att.duration_minutes} Menit</td>
                     <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
+                    {isAdmin && (
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button
+                            onClick={() => handleOpenFormModal(att)}
+                            className="btn btn-secondary btn-sm"
+                            title="Edit Data Riwayat"
+                          >
+                            <Edit2 size={14} color="#2563eb" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRequest(att)}
+                            className="btn btn-danger btn-sm"
+                            title="Hapus Data Riwayat"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -231,6 +414,203 @@ const History = () => {
           </div>
         )}
       </div>
+
+      {/* Admin Form Modal (Tambah / Edit Riwayat Absensi) */}
+      {isAdmin && (
+        <Modal
+          isOpen={showFormModal}
+          onClose={() => setShowFormModal(false)}
+          title={editingAttendance ? '✏️ Edit Data Riwayat Absensi Les' : '➕ Tambah Riwayat Absensi Les Baru'}
+        >
+          <form onSubmit={handleSaveForm}>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Tanggal Mengajar *</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Kategori Tipe Les *</label>
+                <select
+                  className="form-select"
+                  value={form.les_category_id}
+                  onChange={(e) => setForm({ ...form, les_category_id: e.target.value })}
+                  required
+                >
+                  <option value="">Pilih Kategori Les</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.code} - {c.name} ({c.default_duration} mnt)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Pilih Guru Les *</label>
+                <select
+                  className="form-select"
+                  value={form.tutor_id}
+                  onChange={(e) => setForm({ ...form, tutor_id: e.target.value })}
+                  required
+                >
+                  <option value="">Pilih Guru Les</option>
+                  {tutors.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Pilih Murid Les *</label>
+                <select
+                  className="form-select"
+                  value={form.student_id}
+                  onChange={(e) => setForm({ ...form, student_id: e.target.value })}
+                  required
+                >
+                  <option value="">Pilih Murid Les</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid-3">
+              <div className="form-group">
+                <label className="form-label">Mata Pelajaran (Opsional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Misal: Matematika SMA"
+                  value={form.subject}
+                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Jam Mulai</label>
+                <input
+                  type="time"
+                  className="form-input"
+                  value={form.start_time}
+                  onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Jam Selesai</label>
+                <input
+                  type="time"
+                  className="form-input"
+                  value={form.end_time}
+                  onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Catatan Pembelajaran (Opsional)</label>
+              <textarea
+                className="form-input"
+                rows="3"
+                placeholder="Misal: Membahas materi Trigonometri bab 2..."
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              ></textarea>
+            </div>
+
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowFormModal(false)}
+                className="btn btn-secondary"
+                disabled={saving}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving}
+              >
+                {saving ? 'Menyimpan...' : (editingAttendance ? 'Simpan Perubahan' : 'Tambah Riwayat')}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal (Filament Style) */}
+      <Modal
+        isOpen={deleteConfirm.show}
+        onClose={() => setDeleteConfirm({ show: false, id: null, title: '' })}
+        title="⚠️ Konfirmasi Hapus Riwayat Absensi"
+      >
+        <div style={{ padding: '0.25rem 0' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#fff1f2',
+            border: '1px solid #fecdd3',
+            borderRadius: '12px',
+            color: '#9f1239',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              backgroundColor: '#ffe4e6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <AlertTriangle size={24} color="#dc2626" />
+            </div>
+            <div>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#be123c' }}>
+                Apakah Anda Yakin Ingin Menghapus Data Ini?
+              </h4>
+              <p style={{ fontSize: '0.825rem', margin: '0.25rem 0 0 0', color: '#e11d48' }}>
+                Tindakan ini akan menghapus data <strong>{deleteConfirm.title}</strong> secara permanen dari riwayat absensi.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setDeleteConfirm({ show: false, id: null, title: '' })}
+              disabled={deleting}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={confirmDelete}
+              disabled={deleting}
+            >
+              <Trash2 size={16} />
+              <span>{deleting ? 'Menghapus...' : 'Ya, Hapus Data'}</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
