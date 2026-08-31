@@ -26,19 +26,27 @@ class Tutor extends Model
 
     public function categoryRates()
     {
-        return $this->hasMany(TutorCategoryRate::class);
+        return $this->hasMany(TutorCategoryRate::class, 'tutor_id');
     }
 
     public function getCategoryRatesAttribute()
     {
         $rates = [];
         if ($this->relationLoaded('categoryRates')) {
-            foreach ($this->categoryRates as $rate) {
-                $rates[$rate->les_category_id] = (float)$rate->rate_per_session;
+            $relation = $this->getRelation('categoryRates');
+            if ($relation) {
+                foreach ($relation as $rate) {
+                    $rates[$rate->les_category_id] = (float)$rate->rate_per_session;
+                }
             }
-        } else {
-            foreach ($this->categoryRates()->get() as $rate) {
-                $rates[$rate->les_category_id] = (float)$rate->rate_per_session;
+        } elseif ($this->exists) {
+            try {
+                $categoryRates = $this->categoryRates()->get();
+                foreach ($categoryRates as $rate) {
+                    $rates[$rate->les_category_id] = (float)$rate->rate_per_session;
+                }
+            } catch (\Throwable $e) {
+                // fallback
             }
         }
         return $rates;

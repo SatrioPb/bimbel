@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\LesCategory;
 use App\Models\Tutor;
 use App\Models\TutorCategoryRate;
 use Illuminate\Http\Request;
@@ -37,6 +38,7 @@ class TutorController extends Controller
             'phone' => 'nullable|string|max:20',
             'specialization' => 'nullable|string|max:255',
             'category_rates' => 'nullable|array',
+            'selected_category_id' => 'nullable|exists:les_categories,id',
         ]);
 
         $latestTutorId = Tutor::max('id') + 1;
@@ -49,6 +51,17 @@ class TutorController extends Controller
             'specialization' => $request->specialization,
             'rate_per_session' => 15000,
         ]);
+
+        if ($request->filled('selected_category_id')) {
+            $catId = $request->selected_category_id;
+            $category = LesCategory::find($catId);
+            if ($category) {
+                TutorCategoryRate::updateOrCreate(
+                    ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
+                    ['rate_per_session' => (float)$category->fee_per_session]
+                );
+            }
+        }
 
         if ($request->filled('category_rates') && is_array($request->category_rates)) {
             foreach ($request->category_rates as $catId => $rate) {
@@ -89,6 +102,7 @@ class TutorController extends Controller
             'phone' => 'nullable|string|max:20',
             'specialization' => 'nullable|string|max:255',
             'category_rates' => 'nullable|array',
+            'selected_category_id' => 'nullable|exists:les_categories,id',
         ]);
 
         $tutor->update($request->only([
@@ -96,6 +110,17 @@ class TutorController extends Controller
             'phone',
             'specialization',
         ]));
+
+        if ($request->filled('selected_category_id')) {
+            $catId = $request->selected_category_id;
+            $category = LesCategory::find($catId);
+            if ($category) {
+                TutorCategoryRate::updateOrCreate(
+                    ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
+                    ['rate_per_session' => (float)$category->fee_per_session]
+                );
+            }
+        }
 
         if ($request->has('category_rates') && is_array($request->category_rates)) {
             foreach ($request->category_rates as $catId => $rate) {
