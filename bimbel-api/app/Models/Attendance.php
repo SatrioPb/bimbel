@@ -19,6 +19,7 @@ class Attendance extends Model
         'duration_minutes',
         'subject',
         'fee_per_session',
+        'tutor_fee_per_session',
         'notes',
     ];
 

@@ -70,6 +70,10 @@ Route::prefix('v1')->group(function () {
                 Route::get('/income-summary', [FinanceController::class, 'incomeSummary']);
                 Route::get('/income-summary/pdf', [FinanceController::class, 'incomeSummaryPdf']);
                 Route::get('/income-summary/excel', [FinanceController::class, 'incomeSummaryExcel']);
+
+                Route::get('/tutor-salaries', [FinanceController::class, 'tutorSalaries']);
+                Route::get('/tutor-salaries/pdf', [FinanceController::class, 'tutorSalariesPdf']);
+                Route::get('/tutor-salaries/excel', [FinanceController::class, 'tutorSalariesExcel']);
             });
 
         });

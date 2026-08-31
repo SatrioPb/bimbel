@@ -361,4 +361,145 @@ class FinanceController extends Controller
 
         return response()->download($tempPath, $fileName)->deleteFileAfterSend(true);
     }
+
+    // Rekap Gaji Guru Les per Bulan
+    public function tutorSalaries(Request $request)
+    {
+        $month = (int)($request->month ?? date('m'));
+        $year = (int)($request->year ?? date('Y'));
+
+        $monthsIndo = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        // Fetch all attendances for the selected month and year
+        $attendances = Attendance::with(['tutor', 'student', 'lesCategory'])
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->get();
+
+        // Group attendances by tutor_id
+        $grouped = $attendances->groupBy('tutor_id');
+
+        $tutorSalaries = [];
+        $totalPayroll = 0;
+
+        foreach ($grouped as $tutorId => $items) {
+            $tutor = $items->first()->tutor;
+            if (!$tutor) continue;
+
+            $studentsTaught = $items->pluck('student.name')->filter()->unique()->values()->toArray();
+            $totalSessions = $items->count();
+
+            // Breakdown by category code
+            $categoryBreakdown = [];
+            foreach ($items as $item) {
+                $catCode = $item->lesCategory->code ?? 'REG';
+                if (!isset($categoryBreakdown[$catCode])) {
+                    $categoryBreakdown[$catCode] = 0;
+                }
+                $categoryBreakdown[$catCode]++;
+            }
+
+            $totalSalary = (float)$items->sum('tutor_fee_per_session');
+            $totalPayroll += $totalSalary;
+
+            $tutorSalaries[] = [
+                'tutor_id' => $tutor->id,
+                'nip_code' => $tutor->nip_code,
+                'name' => $tutor->name,
+                'phone' => $tutor->phone,
+                'specialization' => $tutor->specialization,
+                'students_taught' => $studentsTaught,
+                'students_count' => count($studentsTaught),
+                'total_sessions' => $totalSessions,
+                'category_breakdown' => $categoryBreakdown,
+                'total_salary' => $totalSalary,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'month' => $month,
+                'month_name' => $monthsIndo[$month] ?? '',
+                'year' => $year,
+                'total_payroll' => $totalPayroll,
+                'tutors_count' => count($tutorSalaries),
+                'tutor_salaries' => $tutorSalaries,
+            ],
+        ]);
+    }
+
+    public function tutorSalariesPdf(Request $request)
+    {
+        $month = (int)($request->month ?? date('m'));
+        $year = (int)($request->year ?? date('Y'));
+
+        $data = $this->tutorSalaries($request)->getData(true)['data'];
+
+        $pdf = Pdf::loadView('pdf.tutor_salary_summary', [
+            'data' => $data,
+            'month' => $month,
+            'year' => $year,
+            'printedDate' => date('d/m/Y H:i')
+        ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
+
+        return $pdf->download('Rekap_Gaji_Guru_' . sprintf('%02d', $month) . '_' . $year . '.pdf');
+    }
+
+    public function tutorSalariesExcel(Request $request)
+    {
+        $month = (int)($request->month ?? date('m'));
+        $year = (int)($request->year ?? date('Y'));
+        $data = $this->tutorSalaries($request)->getData(true)['data'];
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rekap Gaji Guru ' . sprintf('%02d', $month) . '-' . $year);
+
+        // Header
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'NIP/Kode');
+        $sheet->setCellValue('C1', 'Nama Guru Les');
+        $sheet->setCellValue('D1', 'Murid Yang Diajar');
+        $sheet->setCellValue('E1', 'Total Sesi');
+        $sheet->setCellValue('F1', 'Rincian Sesi per Kategori');
+        $sheet->setCellValue('G1', 'Total Gaji Guru (Rp)');
+
+        $row = 2;
+        foreach ($data['tutor_salaries'] as $index => $item) {
+            $studentsStr = implode(', ', $item['students_taught']);
+            
+            $catBreakdownArr = [];
+            foreach ($item['category_breakdown'] as $code => $count) {
+                $catBreakdownArr[] = "{$code}: {$count} sesi";
+            }
+            $catStr = implode(' | ', $catBreakdownArr);
+
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $item['nip_code']);
+            $sheet->setCellValue('C' . $row, $item['name']);
+            $sheet->setCellValue('D' . $row, $studentsStr);
+            $sheet->setCellValue('E' . $row, $item['total_sessions']);
+            $sheet->setCellValue('F' . $row, $catStr);
+            $sheet->setCellValue('G' . $row, $item['total_salary']);
+            $row++;
+        }
+
+        // Total
+        $sheet->setCellValue('A' . $row, 'TOTAL REKAP GAJI');
+        $sheet->setCellValue('G' . $row, $data['total_payroll']);
+
+        $fileName = 'Rekap_Gaji_Guru_' . sprintf('%02d', $month) . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $tempPath = storage_path('app/' . $fileName);
+        $writer->save($tempPath);
+
+        return response()->download($tempPath, $fileName)->deleteFileAfterSend(true);
+    }
 }

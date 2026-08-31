@@ -130,13 +130,19 @@ const Database = () => {
 
   // Tutor Modal Handlers
   const handleOpenTutorModal = (tutor = null) => {
+    const initialRates = {};
+    categories.forEach(c => {
+      initialRates[c.id] = tutor?.category_rates?.[c.id] ?? 15000;
+    });
+
     if (tutor) {
       setEditingTutor(tutor);
       setTutorForm({
         name: tutor.name || '',
         phone: tutor.phone || '',
         nip_code: tutor.nip_code || '',
-        specialization: tutor.specialization || ''
+        specialization: tutor.specialization || '',
+        category_rates: initialRates
       });
     } else {
       setEditingTutor(null);
@@ -144,7 +150,8 @@ const Database = () => {
         name: '',
         phone: '',
         nip_code: `G${new Date().getFullYear()}${Math.floor(100 + Math.random() * 900)}`,
-        specialization: ''
+        specialization: '',
+        category_rates: initialRates
       });
     }
     setShowTutorModal(true);
@@ -664,6 +671,39 @@ const Database = () => {
                 value={tutorForm.specialization}
                 onChange={(e) => setTutorForm({ ...tutorForm, specialization: e.target.value })}
               />
+            </div>
+          </div>
+
+          {/* Per-Category Salary Rate Settings */}
+          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+            <label className="form-label" style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem', display: 'block' }}>
+              💵 Setting Tarif Gaji / Honor Guru per Kategori Les (Rp / Sesi)
+            </label>
+            <div className="grid-2">
+              {categories.map((c) => (
+                <div key={c.id} className="form-group" style={{ marginBottom: '0.75rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.8rem', color: '#475569' }}>
+                    Gaji Kategori [{c.code}] - {c.name}
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
+                    <input
+                      type="number"
+                      className="form-input"
+                      style={{ paddingLeft: '2.4rem', fontSize: '0.85rem' }}
+                      placeholder="15000"
+                      value={tutorForm.category_rates?.[c.id] ?? ''}
+                      onChange={(e) => setTutorForm({
+                        ...tutorForm,
+                        category_rates: {
+                          ...tutorForm.category_rates,
+                          [c.id]: e.target.value
+                        }
+                      })}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
