@@ -357,7 +357,12 @@ const History = () => {
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
               <span className="badge badge-emerald" style={{ fontSize: '0.825rem', padding: '0.4rem 0.8rem' }}>
-                💵 Total Gaji Guru Periode Ini: Rp {attendances.reduce((sum, item) => sum + (parseFloat(item.tutor_fee_per_session || 15000)), 0).toLocaleString('id-ID')}
+                💵 Total Gaji Guru Periode Ini: Rp {attendances.reduce((sum, item) => {
+                  const fee = (item.tutor_fee_per_session && parseFloat(item.tutor_fee_per_session) > 0)
+                    ? parseFloat(item.tutor_fee_per_session)
+                    : (item.lesCategory?.tutor_fee_per_session || item.les_category?.tutor_fee_per_session || 15000);
+                  return sum + parseFloat(fee);
+                }, 0).toLocaleString('id-ID')}
               </span>
             </div>
 
@@ -377,22 +382,27 @@ const History = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {attendances.map((att) => (
-                    <tr key={att.id}>
-                      <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
-                      <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
-                      <td style={{ fontWeight: 600, color: '#2563eb' }}>{att.student?.name || '-'}</td>
-                      <td>
-                        <span className="badge badge-indigo">
-                          {att.les_category?.name || att.lesCategory?.name || 'Les'}
-                        </span>
-                      </td>
-                      <td>{att.subject || '-'}</td>
-                      <td>{att.duration_minutes} Menit</td>
-                      <td style={{ fontWeight: 700, color: '#059669' }}>
-                        Rp {parseFloat(att.tutor_fee_per_session || 15000).toLocaleString('id-ID')}
-                      </td>
-                      <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
+                  {attendances.map((att) => {
+                    const tutorFee = (att.tutor_fee_per_session && parseFloat(att.tutor_fee_per_session) > 0)
+                      ? parseFloat(att.tutor_fee_per_session)
+                      : parseFloat(att.lesCategory?.tutor_fee_per_session || att.les_category?.tutor_fee_per_session || 15000);
+
+                    return (
+                      <tr key={att.id}>
+                        <td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{att.date}</td>
+                        <td style={{ fontWeight: 600, color: '#7c3aed' }}>{att.tutor?.name || '-'}</td>
+                        <td style={{ fontWeight: 600, color: '#2563eb' }}>{att.student?.name || '-'}</td>
+                        <td>
+                          <span className="badge badge-indigo">
+                            {att.les_category?.name || att.lesCategory?.name || 'Les'}
+                          </span>
+                        </td>
+                        <td>{att.subject || '-'}</td>
+                        <td>{att.duration_minutes} Menit</td>
+                        <td style={{ fontWeight: 700, color: '#059669' }}>
+                          Rp {tutorFee.toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
                     {isAdmin && (
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -414,14 +424,15 @@ const History = () => {
                         </div>
                       </td>
                     )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
 
       {/* Admin Form Modal (Tambah / Edit Riwayat Absensi) */}
       {isAdmin && (
