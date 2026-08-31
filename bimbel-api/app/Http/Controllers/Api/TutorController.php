@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LesCategory;
 use App\Models\Tutor;
-use App\Models\TutorCategoryRate;
 use Illuminate\Http\Request;
 
 class TutorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Tutor::with('categoryRates');
+        $query = Tutor::query();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -37,8 +35,7 @@ class TutorController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'specialization' => 'nullable|string|max:255',
-            'category_rates' => 'nullable|array',
-            'selected_category_id' => 'nullable|exists:les_categories,id',
+            'rate_per_session' => 'nullable|numeric|min:0',
         ]);
 
         $latestTutorId = Tutor::max('id') + 1;
@@ -49,32 +46,8 @@ class TutorController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'specialization' => $request->specialization,
-            'rate_per_session' => 15000,
+            'rate_per_session' => 15000, // Fixed Gaji Guru Les: 15.000 per pertemuan per anak
         ]);
-
-        if ($request->filled('selected_category_id')) {
-            $catId = $request->selected_category_id;
-            $category = LesCategory::find($catId);
-            if ($category) {
-                TutorCategoryRate::updateOrCreate(
-                    ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
-                    ['rate_per_session' => (float)$category->fee_per_session]
-                );
-            }
-        }
-
-        if ($request->filled('category_rates') && is_array($request->category_rates)) {
-            foreach ($request->category_rates as $catId => $rate) {
-                if ($rate !== null && $rate !== '') {
-                    TutorCategoryRate::updateOrCreate(
-                        ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
-                        ['rate_per_session' => (float)$rate]
-                    );
-                }
-            }
-        }
-
-        $tutor->load('categoryRates');
 
         return response()->json([
             'success' => true,
@@ -85,7 +58,7 @@ class TutorController extends Controller
 
     public function show($id)
     {
-        $tutor = Tutor::with(['categoryRates', 'attendances.student'])->findOrFail($id);
+        $tutor = Tutor::with(['attendances.student'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -101,39 +74,15 @@ class TutorController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'specialization' => 'nullable|string|max:255',
-            'category_rates' => 'nullable|array',
-            'selected_category_id' => 'nullable|exists:les_categories,id',
+            'rate_per_session' => 'sometimes|required|numeric|min:0',
         ]);
 
         $tutor->update($request->only([
             'name',
             'phone',
             'specialization',
+            'rate_per_session',
         ]));
-
-        if ($request->filled('selected_category_id')) {
-            $catId = $request->selected_category_id;
-            $category = LesCategory::find($catId);
-            if ($category) {
-                TutorCategoryRate::updateOrCreate(
-                    ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
-                    ['rate_per_session' => (float)$category->fee_per_session]
-                );
-            }
-        }
-
-        if ($request->has('category_rates') && is_array($request->category_rates)) {
-            foreach ($request->category_rates as $catId => $rate) {
-                if ($rate !== null && $rate !== '') {
-                    TutorCategoryRate::updateOrCreate(
-                        ['tutor_id' => $tutor->id, 'les_category_id' => $catId],
-                        ['rate_per_session' => (float)$rate]
-                    );
-                }
-            }
-        }
-
-        $tutor->load('categoryRates');
 
         return response()->json([
             'success' => true,
