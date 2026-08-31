@@ -64,6 +64,8 @@ class AttendanceController extends Controller
 
         if ($tutorCategoryRate && $tutorCategoryRate->rate_per_session > 0) {
             $tutorFee = (float)$tutorCategoryRate->rate_per_session;
+        } elseif ($category && $category->tutor_fee_per_session > 0) {
+            $tutorFee = (float)$category->tutor_fee_per_session;
         } else {
             $tutor = Tutor::find($request->tutor_id);
             $tutorFee = $tutor ? (float)($tutor->rate_per_session ?: $feePerSession) : $feePerSession;
@@ -132,6 +134,8 @@ class AttendanceController extends Controller
 
         if ($tutorCategoryRate && $tutorCategoryRate->rate_per_session > 0) {
             $tutorFee = (float)$tutorCategoryRate->rate_per_session;
+        } elseif ($category && $category->tutor_fee_per_session > 0) {
+            $tutorFee = (float)$category->tutor_fee_per_session;
         } else {
             $tutor = Tutor::find($tutorId);
             $tutorFee = $tutor ? (float)($tutor->rate_per_session ?: $feePerSession) : $feePerSession;

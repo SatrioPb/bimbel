@@ -25,6 +25,7 @@ class LesCategoryController extends Controller
             'name' => 'required|string|max:255',
             'default_duration' => 'required|integer|in:60,90',
             'fee_per_session' => 'required|numeric|min:0',
+            'tutor_fee_per_session' => 'nullable|numeric|min:0',
         ]);
 
         $category = LesCategory::create([
@@ -32,6 +33,7 @@ class LesCategoryController extends Controller
             'name' => $request->name,
             'default_duration' => $request->default_duration,
             'fee_per_session' => $request->fee_per_session,
+            'tutor_fee_per_session' => $request->tutor_fee_per_session ?? 15000,
         ]);
 
         return response()->json([
@@ -60,6 +62,7 @@ class LesCategoryController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'default_duration' => 'sometimes|required|integer|in:60,90',
             'fee_per_session' => 'sometimes|required|numeric|min:0',
+            'tutor_fee_per_session' => 'nullable|numeric|min:0',
         ]);
 
         $category->update([
@@ -67,6 +70,7 @@ class LesCategoryController extends Controller
             'name' => $request->name ?? $category->name,
             'default_duration' => $request->default_duration ?? $category->default_duration,
             'fee_per_session' => $request->fee_per_session ?? $category->fee_per_session,
+            'tutor_fee_per_session' => $request->tutor_fee_per_session ?? $category->tutor_fee_per_session,
         ]);
 
         return response()->json([

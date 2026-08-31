@@ -14,6 +14,7 @@ class LesCategory extends Model
         'name',
         'default_duration',
         'fee_per_session',
+        'tutor_fee_per_session',
     ];
 
     public static function calculateFixedFee($code, $durationMinutes = 90)

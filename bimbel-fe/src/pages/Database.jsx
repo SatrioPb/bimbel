@@ -173,7 +173,8 @@ const Database = () => {
         code: cat.code,
         name: cat.name,
         default_duration: cat.default_duration,
-        fee_per_session: cat.fee_per_session
+        fee_per_session: cat.fee_per_session,
+        tutor_fee_per_session: cat.tutor_fee_per_session || 15000
       });
     } else {
       setEditingCat(null);
@@ -181,7 +182,8 @@ const Database = () => {
         code: '',
         name: '',
         default_duration: 90,
-        fee_per_session: 15000
+        fee_per_session: 15000,
+        tutor_fee_per_session: 15000
       });
     }
     setShowCatModal(true);
@@ -459,13 +461,15 @@ const Database = () => {
                     <th>Kode Tipe</th>
                     <th>Nama Kategori Les</th>
                     <th>Durasi Waktu</th>
-                    <th>Tarif Biaya Les</th>
+                    <th>Tarif Biaya Murid</th>
+                    <th>Tarif Gaji Guru</th>
                     <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {categories.map((c) => {
                     const fee = parseFloat(c.fee_per_session || 0);
+                    const tutorFee = parseFloat(c.tutor_fee_per_session || 15000);
 
                     return (
                       <tr key={c.id}>
@@ -476,6 +480,9 @@ const Database = () => {
                         <td>{c.default_duration} Menit</td>
                         <td style={{ fontWeight: 700, color: '#059669' }}>
                           Rp {fee.toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ fontWeight: 700, color: '#7c3aed' }}>
+                          Rp {tutorFee.toLocaleString('id-ID')}
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -710,27 +717,39 @@ const Database = () => {
             </div>
           </div>
 
+          <div className="form-group" style={{ marginTop: '0.75rem' }}>
+            <label className="form-label">Durasi Waktu Default *</label>
+            <select
+              className="form-select"
+              value={catForm.default_duration}
+              onChange={(e) => setCatForm({ ...catForm, default_duration: parseInt(e.target.value) })}
+              required
+            >
+              <option value={60}>60 Menit</option>
+              <option value={90}>90 Menit</option>
+            </select>
+          </div>
+
           <div className="grid-2" style={{ marginTop: '0.75rem' }}>
             <div className="form-group">
-              <label className="form-label">Durasi Waktu Default *</label>
-              <select
-                className="form-select"
-                value={catForm.default_duration}
-                onChange={(e) => setCatForm({ ...catForm, default_duration: parseInt(e.target.value) })}
-                required
-              >
-                <option value={60}>60 Menit</option>
-                <option value={90}>90 Menit</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Tarif Biaya Les / Sesi (Rp) *</label>
+              <label className="form-label">Tarif Biaya Les Murid / Sesi (Rp) *</label>
               <input
                 type="number"
                 className="form-input"
                 placeholder="Contoh: 30000"
                 value={catForm.fee_per_session}
                 onChange={(e) => setCatForm({ ...catForm, fee_per_session: parseFloat(e.target.value) })}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Tarif Biaya Gaji Guru / Sesi (Rp) *</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="Contoh: 15000"
+                value={catForm.tutor_fee_per_session}
+                onChange={(e) => setCatForm({ ...catForm, tutor_fee_per_session: parseFloat(e.target.value) })}
                 required
               />
             </div>
