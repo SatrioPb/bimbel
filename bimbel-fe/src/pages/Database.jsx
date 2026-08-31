@@ -132,7 +132,7 @@ const Database = () => {
   const handleOpenTutorModal = (tutor = null) => {
     const initialRates = {};
     categories.forEach(c => {
-      initialRates[c.id] = tutor?.category_rates?.[c.id] ?? 15000;
+      initialRates[c.id] = tutor?.category_rates?.[c.id] ?? c.fee_per_session ?? 15000;
     });
 
     if (tutor) {
@@ -142,6 +142,7 @@ const Database = () => {
         phone: tutor.phone || '',
         nip_code: tutor.nip_code || '',
         specialization: tutor.specialization || '',
+        selected_category_id: categories[0]?.id || '',
         category_rates: initialRates
       });
     } else {
@@ -151,10 +152,31 @@ const Database = () => {
         phone: '',
         nip_code: `G${new Date().getFullYear()}${Math.floor(100 + Math.random() * 900)}`,
         specialization: '',
+        selected_category_id: '',
         category_rates: initialRates
       });
     }
     setShowTutorModal(true);
+  };
+
+  const handleCategorySelectChange = (catId) => {
+    const selectedCat = categories.find(c => c.id == catId);
+    if (selectedCat) {
+      const autoPrice = selectedCat.fee_per_session || 15000;
+      setTutorForm(prev => ({
+        ...prev,
+        selected_category_id: catId,
+        category_rates: {
+          ...prev.category_rates,
+          [catId]: autoPrice
+        }
+      }));
+    } else {
+      setTutorForm(prev => ({
+        ...prev,
+        selected_category_id: catId
+      }));
+    }
   };
 
   const handleSaveTutor = async (e) => {
@@ -674,10 +696,31 @@ const Database = () => {
             </div>
           </div>
 
-          {/* Per-Category Salary Rate Settings */}
+          {/* Dropdown Pilih Kategori Tipe Les for Auto-Filling Price */}
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label className="form-label" style={{ fontWeight: 700, color: '#0f172a' }}>
+                🏷️ Pilih Kategori Tipe Les Guru *
+              </label>
+              <select
+                className="form-select"
+                value={tutorForm.selected_category_id || ''}
+                onChange={(e) => handleCategorySelectChange(e.target.value)}
+              >
+                <option value="">-- Pilih Kategori Tipe Les --</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    [{c.code}] {c.name} (Tarif Standar: Rp {parseFloat(c.fee_per_session || 0).toLocaleString('id-ID')})
+                  </option>
+                ))}
+              </select>
+              <small style={{ color: '#64748b', fontSize: '0.78rem', marginTop: '0.35rem', display: 'block' }}>
+                💡 Memilih kategori di atas akan mengisi nominal harga/gaji guru secara otomatis di bawah.
+              </small>
+            </div>
+
             <label className="form-label" style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem', display: 'block' }}>
-              💵 Setting Tarif Gaji / Honor Guru per Kategori Les (Rp / Sesi)
+              💵 Nominal Tarif Gaji / Honor Guru per Kategori Les (Rp / Sesi)
             </label>
             <div className="grid-2">
               {categories.map((c) => (
