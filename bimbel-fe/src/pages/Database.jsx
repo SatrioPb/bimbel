@@ -696,9 +696,9 @@ const Database = () => {
             </div>
           </div>
 
-          {/* Dropdown Pilih Kategori Tipe Les for Auto-Filling Price */}
+          {/* Dropdown Pilih Kategori Tipe Les Guru */}
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
-            <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <div className="form-group">
               <label className="form-label" style={{ fontWeight: 700, color: '#0f172a' }}>
                 🏷️ Pilih Kategori Tipe Les Guru *
               </label>
@@ -706,6 +706,7 @@ const Database = () => {
                 className="form-select"
                 value={tutorForm.selected_category_id || ''}
                 onChange={(e) => handleCategorySelectChange(e.target.value)}
+                required
               >
                 <option value="">-- Pilih Kategori Tipe Les --</option>
                 {categories.map((c) => (
@@ -715,38 +716,8 @@ const Database = () => {
                 ))}
               </select>
               <small style={{ color: '#64748b', fontSize: '0.78rem', marginTop: '0.35rem', display: 'block' }}>
-                💡 Memilih kategori di atas akan mengisi nominal harga/gaji guru secara otomatis di bawah.
+                💡 Kategori yang dipilih akan secara otomatis menentukan tarif gaji guru les saat mengajar.
               </small>
-            </div>
-
-            <label className="form-label" style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem', display: 'block' }}>
-              💵 Nominal Tarif Gaji / Honor Guru per Kategori Les (Rp / Sesi)
-            </label>
-            <div className="grid-2">
-              {categories.map((c) => (
-                <div key={c.id} className="form-group" style={{ marginBottom: '0.75rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.8rem', color: '#475569' }}>
-                    Gaji Kategori [{c.code}] - {c.name}
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
-                    <input
-                      type="number"
-                      className="form-input"
-                      style={{ paddingLeft: '2.4rem', fontSize: '0.85rem' }}
-                      placeholder="15000"
-                      value={tutorForm.category_rates?.[c.id] ?? ''}
-                      onChange={(e) => setTutorForm({
-                        ...tutorForm,
-                        category_rates: {
-                          ...tutorForm.category_rates,
-                          [c.id]: e.target.value
-                        }
-                      })}
-                    />
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
