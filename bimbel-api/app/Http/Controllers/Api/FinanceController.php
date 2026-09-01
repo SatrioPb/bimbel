@@ -502,4 +502,49 @@ class FinanceController extends Controller
 
         return response()->download($tempPath, $fileName)->deleteFileAfterSend(true);
     }
+
+    // Export PDF Slip Gaji Individual Guru Les
+    public function tutorIndividualSalaryPdf(Request $request, $tutorId)
+    {
+        $month = (int)($request->month ?? date('m'));
+        $year = (int)($request->year ?? date('Y'));
+
+        $tutor = Tutor::findOrFail($tutorId);
+
+        $monthsIndo = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $attendances = Attendance::with(['student', 'lesCategory'])
+            ->where('tutor_id', $tutorId)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $totalSalary = (float)$attendances->sum(function ($att) {
+            if ($att->tutor_fee_per_session && (float)$att->tutor_fee_per_session > 0) {
+                return (float)$att->tutor_fee_per_session;
+            }
+            return (float)($att->lesCategory->tutor_fee_per_session ?? 15000);
+        });
+
+        $pdf = Pdf::loadView('pdf.tutor_individual_salary_slip', [
+            'tutor' => $tutor,
+            'attendances' => $attendances,
+            'month' => $month,
+            'monthName' => $monthsIndo[$month] ?? '',
+            'year' => $year,
+            'totalSalary' => $totalSalary,
+            'printedDate' => date('d/m/Y H:i')
+        ]);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
+
+        $cleanName = str_replace(' ', '_', preg_replace('/[^A-Za-z0-9\- ]/', '', $tutor->name));
+
+        return $pdf->download('Slip_Gaji_' . $cleanName . '_' . sprintf('%02d', $month) . '_' . $year . '.pdf');
+    }
 }

@@ -74,6 +74,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('/tutor-salaries', [FinanceController::class, 'tutorSalaries']);
                 Route::get('/tutor-salaries/pdf', [FinanceController::class, 'tutorSalariesPdf']);
                 Route::get('/tutor-salaries/excel', [FinanceController::class, 'tutorSalariesExcel']);
+                Route::get('/tutor-salaries/{tutorId}/pdf', [FinanceController::class, 'tutorIndividualSalaryPdf']);
             });
 
         });

@@ -190,6 +190,24 @@ const Finance = () => {
     }
   };
 
+  const handleExportIndividualTutorSalary = async (tutorId, tutorName) => {
+    try {
+      const response = await apiClient.get(`/finance/tutor-salaries/${tutorId}/pdf?month=${salaryMonth}&year=${salaryYear}`, {
+        responseType: 'blob'
+      });
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const safeName = tutorName.replace(/[^A-Za-z0-9]/g, '_');
+      link.setAttribute('download', `Slip_Gaji_${safeName}_${salaryMonth}_${salaryYear}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      alert('Gagal mendownload Slip Gaji PDF guru ini.');
+    }
+  };
+
   // Filter Logic for Invoices
   const filteredInvoices = invoices.filter((inv) => {
     const matchSearch =
@@ -550,6 +568,7 @@ const Finance = () => {
                       <th style={{ textAlign: 'center' }}>Total Sesi</th>
                       <th>Rincian Kategori Sesi</th>
                       <th style={{ textAlign: 'right' }}>Total Rekap Gaji (Rp)</th>
+                      <th style={{ textAlign: 'center' }}>Cetak Slip Gaji</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -579,6 +598,17 @@ const Finance = () => {
                         </td>
                         <td style={{ textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '0.95rem' }}>
                           Rp {t.total_salary.toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <button
+                            onClick={() => handleExportIndividualTutorSalary(t.tutor_id, t.name)}
+                            className="btn btn-secondary btn-sm"
+                            style={{ borderColor: '#fecdd3', color: '#be123c' }}
+                            title="Download Slip Gaji PDF Guru Ini"
+                          >
+                            <FileText size={14} color="#be123c" />
+                            <span>Slip Gaji PDF</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
