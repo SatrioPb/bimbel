@@ -138,4 +138,16 @@ class BimbelApiTest extends TestCase
         $response->assertStatus(200)
             ->assertHeader('content-type', 'application/pdf');
     }
+
+    public function test_pdf_individual_tutor_salary_export()
+    {
+        $admin = User::where('email', 'admin@bimbel.com')->first();
+        $tutor = \App\Models\Tutor::first();
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->get("/api/v1/finance/tutor-salaries/{$tutor->id}/pdf");
+
+        $response->assertStatus(200)
+            ->assertHeader('content-type', 'application/pdf');
+    }
 }
