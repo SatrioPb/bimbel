@@ -50,6 +50,12 @@ const History = () => {
   }, []);
 
   useEffect(() => {
+    if (!isAdmin && historyTab !== 'tutors') {
+      setHistoryTab('tutors');
+    }
+  }, [isAdmin, historyTab]);
+
+  useEffect(() => {
     fetchHistory();
   }, [historyTab, selectedMonth, selectedYear, selectedTutorId, selectedStudentId]);
 
@@ -297,12 +303,14 @@ const History = () => {
             >
               👨‍🏫 Riwayat Absensi Guru Les
             </button>
-            <button
-              className={`tab-btn ${historyTab === 'students' ? 'active' : ''}`}
-              onClick={() => setHistoryTab('students')}
-            >
-              🎓 Riwayat Absensi Murid Les
-            </button>
+            {isAdmin && (
+              <button
+                className={`tab-btn ${historyTab === 'students' ? 'active' : ''}`}
+                onClick={() => setHistoryTab('students')}
+              >
+                🎓 Riwayat Absensi Murid Les
+              </button>
+            )}
           </div>
 
           {/* Filters Bar */}
