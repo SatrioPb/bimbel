@@ -378,7 +378,7 @@ const History = () => {
                     <th>Durasi</th>
                     <th>Gaji Guru (Honor)</th>
                     <th>Catatan</th>
-                    {isAdmin && <th style={{ textAlign: 'center' }}>Aksi</th>}
+                    <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -403,27 +403,27 @@ const History = () => {
                           Rp {tutorFee.toLocaleString('id-ID')}
                         </td>
                         <td style={{ fontSize: '0.825rem', color: '#64748b' }}>{att.notes || '-'}</td>
-                    {isAdmin && (
-                      <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                          <button
-                            onClick={() => handleOpenFormModal(att)}
-                            className="btn btn-secondary btn-sm"
-                            title="Edit Data Riwayat"
-                          >
-                            <Edit2 size={14} color="#2563eb" />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRequest(att)}
-                            className="btn btn-danger btn-sm"
-                            title="Hapus Data Riwayat"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    )}
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                            <button
+                              onClick={() => handleOpenFormModal(att)}
+                              className="btn btn-secondary btn-sm"
+                              title="Edit Data Riwayat"
+                            >
+                              <Edit2 size={14} color="#2563eb" />
+                              <span>Edit</span>
+                            </button>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDeleteRequest(att)}
+                                className="btn btn-danger btn-sm"
+                                title="Hapus Data Riwayat"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
                     </tr>
                     );
                   })}
@@ -434,13 +434,12 @@ const History = () => {
         )}
       </div>
 
-      {/* Admin Form Modal (Tambah / Edit Riwayat Absensi) */}
-      {isAdmin && (
-        <Modal
-          isOpen={showFormModal}
-          onClose={() => setShowFormModal(false)}
-          title={editingAttendance ? '✏️ Edit Data Riwayat Absensi Les' : '➕ Catat Presensi Mengajar Guru'}
-        >
+      {/* Form Modal (Tambah / Edit Riwayat Absensi) */}
+      <Modal
+        isOpen={showFormModal}
+        onClose={() => setShowFormModal(false)}
+        title={editingAttendance ? '✏️ Edit Data Riwayat Absensi Les' : '➕ Catat Presensi Mengajar Guru'}
+      >
           <form onSubmit={handleSaveForm}>
             <div className="grid-2">
               {/* Input Nama Guru */}
@@ -554,7 +553,6 @@ const History = () => {
             </div>
           </form>
         </Modal>
-      )}
 
       {/* Delete Confirmation Modal (Filament Style) */}
       <Modal
