@@ -74,6 +74,7 @@ const Database = () => {
     name: '',
     email: '',
     password: '',
+    role: 'guru',
     phone: ''
   });
 
@@ -243,6 +244,7 @@ const Database = () => {
         name: account.name || '',
         email: account.email || '',
         password: account.plain_password || '',
+        role: account.role || 'guru',
         phone: account.phone || ''
       });
     } else {
@@ -251,6 +253,7 @@ const Database = () => {
         name: '',
         email: '',
         password: '',
+        role: 'guru',
         phone: ''
       });
     }
@@ -400,7 +403,7 @@ const Database = () => {
             className={`tab-btn ${activeTab === 'teachers' ? 'active' : ''}`}
             onClick={() => setActiveTab('teachers')}
           >
-            🔑 Akun Login Guru ({teacherAccounts.length})
+            🔑 Akun Login ({teacherAccounts.length})
           </button>
         </div>
 
@@ -548,7 +551,9 @@ const Database = () => {
                     <td style={{ color: '#2563eb', fontWeight: 600 }}>{acc.email}</td>
                     <td>{acc.phone || '-'}</td>
                     <td>
-                      <span className="badge badge-emerald">GURU LES</span>
+                      <span className={`badge ${acc.role === 'admin' ? 'badge-indigo' : 'badge-emerald'}`}>
+                        {acc.role === 'admin' ? 'ADMINISTRATOR' : 'GURU LES'}
+                      </span>
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
@@ -556,7 +561,7 @@ const Database = () => {
                           <Edit2 size={14} color="#059669" />
                           <span>Edit</span>
                         </button>
-                        <button onClick={() => handleDeleteRequest(acc.id, 'teacher-accounts', `Akun Guru ${acc.name}`)} className="btn btn-danger btn-sm" title="Hapus Akun Guru">
+                        <button onClick={() => handleDeleteRequest(acc.id, 'teacher-accounts', `Akun ${acc.name}`)} className="btn btn-danger btn-sm" title="Hapus Akun">
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -815,19 +820,19 @@ const Database = () => {
         </form>
       </Modal>
 
-      {/* Modal Teacher Login Account Form */}
+      {/* Modal Teacher & Admin Login Account Form */}
       <Modal
         isOpen={showTeacherModal}
         onClose={() => setShowTeacherModal(false)}
-        title={editingTeacher ? 'Edit Akun Login Guru' : 'Tambah Akun Login Guru Baru'}
+        title={editingTeacher ? `Edit Akun ${editingTeacher.role === 'admin' ? 'Admin' : 'Guru'}` : 'Tambah Akun Login Baru'}
       >
         <form onSubmit={handleSaveTeacher}>
           <div className="form-group">
-            <label className="form-label">Nama Guru *</label>
+            <label className="form-label">Nama Pengguna *</label>
             <input
               type="text"
               className="form-input"
-              placeholder="Nama lengkap guru"
+              placeholder="Nama lengkap pengguna"
               value={teacherForm.name}
               onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
               required
@@ -836,11 +841,11 @@ const Database = () => {
 
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Email Login Guru *</label>
+              <label className="form-label">Email Login *</label>
               <input
                 type="email"
                 className="form-input"
-                placeholder="guru@bimbel.com"
+                placeholder="user@bimbel.com"
                 value={teacherForm.email}
                 onChange={(e) => setTeacherForm({ ...teacherForm, email: e.target.value })}
                 required
@@ -884,15 +889,30 @@ const Database = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">No. HP Guru (Opsional)</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="0812xxxxxxxx"
-              value={teacherForm.phone}
-              onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })}
-            />
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Role Hak Akses *</label>
+              <select
+                className="form-select"
+                value={teacherForm.role}
+                onChange={(e) => setTeacherForm({ ...teacherForm, role: e.target.value })}
+                required
+              >
+                <option value="guru">Guru Les</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">No. HP (Opsional)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="0812xxxxxxxx"
+                value={teacherForm.phone}
+                onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })}
+              />
+            </div>
           </div>
 
           <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
@@ -900,7 +920,7 @@ const Database = () => {
               Batal
             </button>
             <button type="submit" className="btn btn-emerald">
-              Simpan Akun Guru
+              Simpan Data Akun
             </button>
           </div>
         </form>

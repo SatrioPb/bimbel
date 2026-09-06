@@ -11,7 +11,7 @@ class TeacherAccountController extends Controller
 {
     public function index()
     {
-        $accounts = User::where('role', 'guru')->orderBy('name', 'asc')->get();
+        $accounts = User::orderBy('name', 'asc')->get();
 
         return response()->json([
             'success' => true,
@@ -25,6 +25,7 @@ class TeacherAccountController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
+            'role' => 'nullable|string|in:guru,admin',
             'phone' => 'nullable|string|max:20',
         ]);
 
@@ -33,32 +34,34 @@ class TeacherAccountController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'plain_password' => $request->password,
-            'role' => 'guru',
+            'role' => $request->role ?? 'guru',
             'phone' => $request->phone,
             'status' => 'active',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Akun login guru berhasil dibuat.',
+            'message' => 'Akun login berhasil dibuat.',
             'data' => $user,
         ], 201);
     }
 
     public function update(Request $request, $id)
     {
-        $user = User::where('role', 'guru')->findOrFail($id);
+        $user = User::findOrFail($id);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
+            'role' => 'sometimes|required|string|in:guru,admin',
             'phone' => 'nullable|string|max:20',
         ]);
 
         $updateData = [
             'name' => $request->name ?? $user->name,
             'email' => $request->email ?? $user->email,
+            'role' => $request->role ?? $user->role,
             'phone' => $request->phone ?? $user->phone,
         ];
 
@@ -71,19 +74,27 @@ class TeacherAccountController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Akun login guru berhasil diperbarui.',
+            'message' => 'Akun login berhasil diperbarui.',
             'data' => $user,
         ]);
     }
 
     public function destroy($id)
     {
-        $user = User::where('role', 'guru')->findOrFail($id);
+        $user = User::findOrFail($id);
+
+        if (auth()->check() && (int)auth()->id() === (int)$user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menghapus akun Anda sendiri yang sedang digunakan.',
+            ], 403);
+        }
+
         $user->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Akun login guru berhasil dihapus.',
+            'message' => 'Akun login berhasil dihapus.',
         ]);
     }
 }
