@@ -709,32 +709,24 @@ const Database = () => {
               {categories.map((c) => {
                 const defaultFee = c.tutor_fee_per_session || 15000;
                 const rawVal = tutorForm.category_rates[c.id];
-                const numVal = parseFloat(rawVal);
                 return (
-                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
-                      <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
-                      <div style={{ position: 'relative', width: '160px' }}>
-                        <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
-                        <input
-                          type="number"
-                          className="form-input"
-                          style={{ paddingLeft: '2.2rem' }}
-                          placeholder={parseFloat(defaultFee).toLocaleString('id-ID')}
-                          value={rawVal ?? ''}
-                          onChange={(e) => setTutorForm({
-                            ...tutorForm,
-                            category_rates: { ...tutorForm.category_rates, [c.id]: e.target.value }
-                          })}
-                        />
-                      </div>
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
+                    <div style={{ position: 'relative', width: '160px' }}>
+                      <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
+                      <input
+                        type="number"
+                        className="form-input"
+                        style={{ paddingLeft: '2.2rem' }}
+                        placeholder={parseFloat(defaultFee).toLocaleString('id-ID')}
+                        value={rawVal ?? ''}
+                        onChange={(e) => setTutorForm({
+                          ...tutorForm,
+                          category_rates: { ...tutorForm.category_rates, [c.id]: e.target.value }
+                        })}
+                      />
                     </div>
-                    {numVal > 0 && (
-                      <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#059669', fontWeight: 600, paddingRight: '0.25rem' }}>
-                        = Rp {numVal.toLocaleString('id-ID')}
-                      </div>
-                    )}
                   </div>
                 );
               })}
