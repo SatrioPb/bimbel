@@ -3,6 +3,19 @@ import apiClient from '../api/client';
 import Modal from '../components/Modal';
 import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck, AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
+const formatRupiah = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  const cleanStr = val.toString().replace(/[^0-9]/g, '');
+  if (!cleanStr) return '';
+  return new Intl.NumberFormat('id-ID').format(parseInt(cleanStr, 10));
+};
+
+const parseRupiah = (val) => {
+  if (!val) return 0;
+  const cleanStr = val.toString().replace(/[^0-9]/g, '');
+  return cleanStr ? parseFloat(cleanStr) : 0;
+};
+
 const Database = () => {
   const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories', 'teachers'
   const [students, setStudents] = useState([]);
@@ -140,7 +153,7 @@ const Database = () => {
       setEditingTutor(tutor);
       const rates = {};
       (tutor.category_rates || []).forEach((r) => {
-        rates[r.les_category_id] = r.rate_per_session;
+        rates[r.les_category_id] = r.rate_per_session ? formatRupiah(r.rate_per_session) : '';
       });
       setTutorForm({
         name: tutor.name || '',
@@ -169,7 +182,7 @@ const Database = () => {
         ...tutorForm,
         category_rates: categories.map((c) => ({
           les_category_id: c.id,
-          rate_per_session: parseFloat(tutorForm.category_rates[c.id]) || 0
+          rate_per_session: parseRupiah(tutorForm.category_rates[c.id])
         }))
       };
       if (editingTutor) {
@@ -693,23 +706,32 @@ const Database = () => {
               Kosongkan / isi 0 untuk memakai tarif default kategori. Isi angka untuk menetapkan tarif khusus guru ini pada kategori tersebut.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto', paddingRight: '0.35rem' }}>
-              {categories.map((c) => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
-                  <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
-                  <input
-                    type="number"
-                    className="form-input"
-                    style={{ maxWidth: '160px' }}
-                    placeholder={`Default Rp ${parseFloat(c.tutor_fee_per_session || 15000).toLocaleString('id-ID')}`}
-                    value={tutorForm.category_rates[c.id] ?? ''}
-                    onChange={(e) => setTutorForm({
-                      ...tutorForm,
-                      category_rates: { ...tutorForm.category_rates, [c.id]: e.target.value }
-                    })}
-                  />
-                </div>
-              ))}
+              {categories.map((c) => {
+                const defaultFee = c.tutor_fee_per_session || 15000;
+                return (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
+                    <div style={{ position: 'relative', width: '160px' }}>
+                      <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ paddingLeft: '2.2rem', textAlign: 'right' }}
+                        placeholder={formatRupiah(defaultFee)}
+                        value={tutorForm.category_rates[c.id] ?? ''}
+                        onChange={(e) => {
+                          const formatted = formatRupiah(e.target.value);
+                          setTutorForm({
+                            ...tutorForm,
+                            category_rates: { ...tutorForm.category_rates, [c.id]: formatted }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
               {categories.length === 0 && (
                 <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Belum ada kategori les. Tambahkan dulu di tab Kategori Tipe Les.</p>
               )}
