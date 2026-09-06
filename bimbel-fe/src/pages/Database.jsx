@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import Modal from '../components/Modal';
-import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Database as DbIcon, Plus, Edit2, Trash2, Tag, BookOpen, ShieldAlert, KeyRound, UserCheck, AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 const Database = () => {
   const [activeTab, setActiveTab] = useState('students'); // 'students', 'tutors', 'categories', 'teachers'
@@ -10,6 +10,7 @@ const Database = () => {
   const [categories, setCategories] = useState([]);
   const [teacherAccounts, setTeacherAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Delete Confirmation Modal & Alert Banner State
   const [deleteConfirm, setDeleteConfirm] = useState({
@@ -206,6 +207,7 @@ const Database = () => {
 
   // Teacher Login Account Handlers
   const handleOpenTeacherModal = (account = null) => {
+    setShowPassword(false);
     if (account) {
       setEditingTeacher(account);
       setTeacherForm({
@@ -802,14 +804,36 @@ const Database = () => {
               <label className="form-label">
                 Password {editingTeacher ? '(Kosongkan jika tidak diubah)' : '*'}
               </label>
-              <input
-                type="password"
-                className="form-input"
-                placeholder="••••••••"
-                value={teacherForm.password}
-                onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
-                required={!editingTeacher}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-input"
+                  style={{ paddingRight: '2.5rem' }}
+                  placeholder="••••••••"
+                  value={teacherForm.password}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
+                  required={!editingTeacher}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '0.6rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.2rem'
+                  }}
+                  title={showPassword ? 'Sembunyikan Password' : 'Tampilkan Password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </div>
 
