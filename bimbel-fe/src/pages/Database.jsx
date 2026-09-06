@@ -213,7 +213,7 @@ const Database = () => {
       setTeacherForm({
         name: account.name || '',
         email: account.email || '',
-        password: 'password123',
+        password: '',
         phone: account.phone || ''
       });
     } else {
@@ -221,7 +221,7 @@ const Database = () => {
       setTeacherForm({
         name: '',
         email: '',
-        password: 'password123',
+        password: '',
         phone: ''
       });
     }
@@ -231,10 +231,14 @@ const Database = () => {
   const handleSaveTeacher = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...teacherForm };
+      if (editingTeacher && !payload.password) {
+        delete payload.password;
+      }
       if (editingTeacher) {
-        await apiClient.put(`/database/teacher-accounts/${editingTeacher.id}`, teacherForm);
+        await apiClient.put(`/database/teacher-accounts/${editingTeacher.id}`, payload);
       } else {
-        await apiClient.post('/database/teacher-accounts', teacherForm);
+        await apiClient.post('/database/teacher-accounts', payload);
       }
       setShowTeacherModal(false);
       fetchData();
@@ -802,17 +806,17 @@ const Database = () => {
 
             <div className="form-group">
               <label className="form-label">
-                Password *
+                {editingTeacher ? 'Password Baru (Opsional)' : 'Password *'}
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="form-input"
                   style={{ paddingRight: '2.5rem' }}
-                  placeholder="••••••••"
+                  placeholder={editingTeacher ? 'Kosongkan jika tak diubah' : '••••••••'}
                   value={teacherForm.password}
                   onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
-                  required
+                  required={!editingTeacher}
                 />
                 <button
                   type="button"
@@ -834,6 +838,11 @@ const Database = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {editingTeacher && (
+                <small style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                  Kosongkan jika tidak ingin mengganti password saat ini.
+                </small>
+              )}
             </div>
           </div>
 
