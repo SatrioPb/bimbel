@@ -378,31 +378,29 @@ const History = () => {
           <p style={{ color: '#64748b' }}>Tidak ada data riwayat absensi yang ditemukan.</p>
         ) : (
           <div>
-            {isAdmin && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-                <span className="badge badge-emerald" style={{ fontSize: '0.825rem', padding: '0.4rem 0.8rem' }}>
-                  {historyTab === 'students' ? (
-                    <>
-                      💰 Total Tarif Biaya Les Murid Periode Ini: Rp {attendances.reduce((sum, item) => {
-                        const fee = (item.fee_per_session && parseFloat(item.fee_per_session) > 0)
-                          ? parseFloat(item.fee_per_session)
-                          : (item.lesCategory?.fee_per_session || item.les_category?.fee_per_session || 15000);
-                        return sum + parseFloat(fee);
-                      }, 0).toLocaleString('id-ID')}
-                    </>
-                  ) : (
-                    <>
-                      💵 Total Gaji Guru Periode Ini: Rp {attendances.reduce((sum, item) => {
-                        const fee = (item.tutor_fee_per_session && parseFloat(item.tutor_fee_per_session) > 0)
-                          ? parseFloat(item.tutor_fee_per_session)
-                          : (item.lesCategory?.tutor_fee_per_session || item.les_category?.tutor_fee_per_session || 15000);
-                        return sum + parseFloat(fee);
-                      }, 0).toLocaleString('id-ID')}
-                    </>
-                  )}
-                </span>
-              </div>
-            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+              <span className="badge badge-emerald" style={{ fontSize: '0.825rem', padding: '0.4rem 0.8rem' }}>
+                {historyTab === 'students' ? (
+                  <>
+                    💰 Total Tarif Biaya Les Murid Periode Ini: Rp {attendances.reduce((sum, item) => {
+                      const fee = (item.fee_per_session && parseFloat(item.fee_per_session) > 0)
+                        ? parseFloat(item.fee_per_session)
+                        : (item.lesCategory?.fee_per_session || item.les_category?.fee_per_session || 15000);
+                      return sum + parseFloat(fee);
+                    }, 0).toLocaleString('id-ID')}
+                  </>
+                ) : (
+                  <>
+                    💵 Total Gaji Guru Periode Ini: Rp {attendances.reduce((sum, item) => {
+                      const fee = (item.tutor_fee_per_session && parseFloat(item.tutor_fee_per_session) > 0)
+                        ? parseFloat(item.tutor_fee_per_session)
+                        : (item.lesCategory?.tutor_fee_per_session || item.les_category?.tutor_fee_per_session || 15000);
+                      return sum + parseFloat(fee);
+                    }, 0).toLocaleString('id-ID')}
+                  </>
+                )}
+              </span>
+            </div>
 
             <div className="table-container">
               <table className="custom-table">
