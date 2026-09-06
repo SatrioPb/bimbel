@@ -159,14 +159,29 @@ const Finance = () => {
       const response = await apiClient.get(`/finance/income-summary/${format}?year=${yearFilter === 'all' ? currentYearNum : yearFilter}`, {
         responseType: 'blob'
       });
+      const fileExt = format === 'excel' ? 'xlsx' : format;
       const mimeType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+      let filename = `rekap_pemasukan_${new Date().getFullYear()}.${fileExt}`;
+      const disposition = response.headers && (response.headers['content-disposition'] || response.headers['Content-Disposition']);
+      if (disposition) {
+        const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      if (filename.endsWith('.excel')) {
+        filename = filename.replace(/\.excel$/, '.xlsx');
+      }
+
       const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.setAttribute('download', `rekap_pemasukan_${new Date().getFullYear()}.${format}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       alert(`Gagal mengeksport rekap pemasukan ${format}.`);
     }
@@ -177,14 +192,29 @@ const Finance = () => {
       const response = await apiClient.get(`/finance/tutor-salaries/${format}?month=${salaryMonth}&year=${salaryYear}`, {
         responseType: 'blob'
       });
+      const fileExt = format === 'excel' ? 'xlsx' : format;
       const mimeType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+      let filename = `rekap_gaji_guru_${salaryMonth}_${salaryYear}.${fileExt}`;
+      const disposition = response.headers && (response.headers['content-disposition'] || response.headers['Content-Disposition']);
+      if (disposition) {
+        const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      if (filename.endsWith('.excel')) {
+        filename = filename.replace(/\.excel$/, '.xlsx');
+      }
+
       const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.setAttribute('download', `rekap_gaji_guru_${salaryMonth}_${salaryYear}.${format}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       alert(`Gagal mengeksport rekap gaji guru ${format}.`);
     }

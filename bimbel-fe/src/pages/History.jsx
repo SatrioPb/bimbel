@@ -105,14 +105,29 @@ const History = () => {
         responseType: 'blob'
       });
 
+      const fileExt = format === 'excel' ? 'xlsx' : format;
       const mimeType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+      let filename = `riwayat_${historyTab}_${new Date().toISOString().split('T')[0]}.${fileExt}`;
+      const disposition = response.headers && (response.headers['content-disposition'] || response.headers['Content-Disposition']);
+      if (disposition) {
+        const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      if (filename.endsWith('.excel')) {
+        filename = filename.replace(/\.excel$/, '.xlsx');
+      }
+
       const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.setAttribute('download', `riwayat_${historyTab}_${new Date().toISOString().split('T')[0]}.${format}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       alert(`Gagal mengeksport berkas ${format}.`);
     }
