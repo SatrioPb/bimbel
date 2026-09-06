@@ -32,6 +32,7 @@ class TeacherAccountController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'plain_password' => $request->password,
             'role' => 'guru',
             'phone' => $request->phone,
             'status' => 'active',
@@ -63,6 +64,7 @@ class TeacherAccountController extends Controller
 
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
+            $updateData['plain_password'] = $request->password;
         }
 
         $user->update($updateData);
