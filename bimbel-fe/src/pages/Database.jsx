@@ -213,7 +213,7 @@ const Database = () => {
       setTeacherForm({
         name: account.name || '',
         email: account.email || '',
-        password: '',
+        password: 'password123',
         phone: account.phone || ''
       });
     } else {
@@ -802,7 +802,7 @@ const Database = () => {
 
             <div className="form-group">
               <label className="form-label">
-                Password {editingTeacher ? '(Kosongkan jika tidak diubah)' : '*'}
+                Password *
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
@@ -812,7 +812,7 @@ const Database = () => {
                   placeholder="••••••••"
                   value={teacherForm.password}
                   onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
-                  required={!editingTeacher}
+                  required
                 />
                 <button
                   type="button"
