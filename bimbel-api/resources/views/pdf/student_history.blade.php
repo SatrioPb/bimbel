@@ -72,30 +72,51 @@
     <table class="table">
         <thead>
             <tr>
-                <th width="6%">No</th>
-                <th width="16%">Tanggal</th>
-                <th width="26%">Nama Murid</th>
-                <th width="24%">Guru Les</th>
-                <th width="14%">Jenis Les</th>
-                <th width="14%">Mata Pelajaran</th>
+                <th width="5%">No</th>
+                <th width="14%">Tanggal</th>
+                <th width="20%">Nama Murid</th>
+                <th width="18%">Guru Les</th>
+                <th width="13%">Jenis Les</th>
+                <th width="15%">Mata Pelajaran</th>
+                <th width="15%" style="text-align: right;">Tarif Biaya Les</th>
             </tr>
         </thead>
         <tbody>
+            @php $totalFee = 0; @endphp
             @forelse($attendances as $index => $item)
+            @php
+                $fee = ($item->fee_per_session && (float)$item->fee_per_session > 0)
+                    ? (float)$item->fee_per_session
+                    : (float)($item->lesCategory->fee_per_session ?? 15000);
+                $totalFee += $fee;
+            @endphp
             <tr>
-                <td>{{ $index + 1 }}</td>
+                <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>{{ \Carbon\Carbon::parse($item->date)->format('d/m/Y') }}</td>
                 <td>{{ $item->student->name ?? '-' }}</td>
                 <td>{{ $item->tutor->name ?? '-' }}</td>
                 <td>{{ $item->lesCategory->code ?? $item->lesCategory->name ?? '-' }}</td>
-                <td>{{ $item->subject }}</td>
+                <td>{{ $item->subject ?: '-' }}</td>
+                <td style="text-align: right; font-weight: bold;">
+                    Rp {{ number_format($fee, 0, ',', '.') }}
+                </td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" style="text-align: center; color: #000000;">Tidak ada data riwayat absensi.</td>
+                <td colspan="7" style="text-align: center; color: #000000;">Tidak ada data riwayat absensi.</td>
             </tr>
             @endforelse
         </tbody>
+        @if(count($attendances) > 0)
+        <tfoot>
+            <tr style="background-color: #f8fafc;">
+                <td colspan="6" style="text-align: right; font-weight: bold;">TOTAL BIAYA LES:</td>
+                <td style="text-align: right; font-weight: bold; font-size: 13px;">
+                    Rp {{ number_format($totalFee, 0, ',', '.') }}
+                </td>
+            </tr>
+        </tfoot>
+        @endif
     </table>
 
     <div class="footer">
