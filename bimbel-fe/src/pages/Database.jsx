@@ -692,7 +692,7 @@ const Database = () => {
             <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 0.6rem 0' }}>
               Kosongkan / isi 0 untuk memakai tarif default kategori. Isi angka untuk menetapkan tarif khusus guru ini pada kategori tersebut.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto', paddingRight: '0.35rem' }}>
               {categories.map((c) => (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>

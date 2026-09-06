@@ -39,6 +39,9 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         borderRadius: '12px',
         width: '100%',
         maxWidth: '560px',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
         overflow: 'hidden',
         animation: 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -50,7 +53,8 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: '#f8fafc'
+          backgroundColor: '#f8fafc',
+          flexShrink: 0
         }}>
           <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
             {title}
@@ -77,7 +81,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '1.5rem' }}>
+        <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
           {children}
         </div>
       </div>
