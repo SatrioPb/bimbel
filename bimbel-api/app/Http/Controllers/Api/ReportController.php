@@ -216,10 +216,17 @@ class ReportController extends Controller
         $sheet->setCellValue('E1', 'Kategori Les');
         $sheet->setCellValue('F1', 'Mata Pelajaran');
         $sheet->setCellValue('G1', 'Durasi (Menit)');
-        $sheet->setCellValue('H1', 'Catatan');
+        $sheet->setCellValue('H1', 'Gaji Guru (Honor)');
+        $sheet->setCellValue('I1', 'Catatan');
 
         $row = 2;
+        $totalSalary = 0;
         foreach ($attendances as $index => $item) {
+            $fee = ($item->tutor_fee_per_session && (float)$item->tutor_fee_per_session > 0)
+                ? (float)$item->tutor_fee_per_session
+                : (float)($item->lesCategory->tutor_fee_per_session ?? 15000);
+            $totalSalary += $fee;
+
             $sheet->setCellValue('A' . $row, $index + 1);
             $sheet->setCellValue('B' . $row, $item->date);
             $sheet->setCellValue('C' . $row, $item->tutor->name ?? '');
@@ -227,9 +234,14 @@ class ReportController extends Controller
             $sheet->setCellValue('E' . $row, $item->lesCategory->name ?? '-');
             $sheet->setCellValue('F' . $row, $item->subject ?? '-');
             $sheet->setCellValue('G' . $row, $item->duration_minutes);
-            $sheet->setCellValue('H' . $row, $item->notes ?? '-');
+            $sheet->setCellValue('H' . $row, $fee);
+            $sheet->setCellValue('I' . $row, $item->notes ?? '-');
             $row++;
         }
+
+        // Total Gaji Guru Row
+        $sheet->setCellValue('A' . $row, 'TOTAL GAJI GURU');
+        $sheet->setCellValue('H' . $row, $totalSalary);
 
         $fileName = 'Riwayat_Mengajar_Guru_' . date('Ymd_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
