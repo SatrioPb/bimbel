@@ -150,4 +150,49 @@ class BimbelApiTest extends TestCase
         $response->assertStatus(200)
             ->assertHeader('content-type', 'application/pdf');
     }
+
+    public function test_custom_tutor_category_rate_is_saved_and_applied_to_attendance()
+    {
+        $admin = User::where('email', 'admin@bimbel.com')->first();
+        $student = Student::first();
+        $tutor = Tutor::first();
+        $category = LesCategory::first();
+
+        $customRate = 27500;
+
+        $updateResponse = $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/v1/database/tutors/{$tutor->id}", [
+                'name' => $tutor->name,
+                'rate_per_session' => 15000,
+                'category_rates' => [
+                    [
+                        'les_category_id' => $category->id,
+                        'rate_per_session' => $customRate,
+                    ]
+                ]
+            ]);
+
+        $updateResponse->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseHas('tutor_category_rates', [
+            'tutor_id' => $tutor->id,
+            'les_category_id' => $category->id,
+            'rate_per_session' => $customRate,
+        ]);
+
+        $attendanceResponse = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/attendances', [
+                'tutor_id' => $tutor->id,
+                'student_id' => $student->id,
+                'les_category_id' => $category->id,
+                'date' => date('Y-m-d'),
+                'duration_minutes' => 90,
+                'subject' => 'Fisika',
+            ]);
+
+        $attendanceResponse->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.tutor_fee_per_session', $customRate);
+    }
 }

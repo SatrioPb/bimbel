@@ -21,4 +21,9 @@ class Tutor extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function categoryRates()
+    {
+        return $this->hasMany(TutorCategoryRate::class, 'tutor_id');
+    }
 }
