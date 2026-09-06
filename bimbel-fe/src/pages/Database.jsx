@@ -153,7 +153,7 @@ const Database = () => {
       setEditingTutor(tutor);
       const rates = {};
       (tutor.category_rates || []).forEach((r) => {
-        rates[r.les_category_id] = r.rate_per_session ? formatRupiah(r.rate_per_session) : '';
+        rates[r.les_category_id] = r.rate_per_session ? parseFloat(r.rate_per_session) : '';
       });
       setTutorForm({
         name: tutor.name || '',
@@ -182,7 +182,7 @@ const Database = () => {
         ...tutorForm,
         category_rates: categories.map((c) => ({
           les_category_id: c.id,
-          rate_per_session: parseRupiah(tutorForm.category_rates[c.id])
+          rate_per_session: parseFloat(tutorForm.category_rates[c.id]) || 0
         }))
       };
       if (editingTutor) {
@@ -705,30 +705,36 @@ const Database = () => {
             <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 0.6rem 0' }}>
               Kosongkan / isi 0 untuk memakai tarif default kategori. Isi angka untuk menetapkan tarif khusus guru ini pada kategori tersebut.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto', paddingRight: '0.35rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '220px', overflowY: 'auto', paddingRight: '0.35rem' }}>
               {categories.map((c) => {
                 const defaultFee = c.tutor_fee_per_session || 15000;
+                const rawVal = tutorForm.category_rates[c.id];
+                const numVal = parseFloat(rawVal);
                 return (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
-                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
-                    <div style={{ position: 'relative', width: '160px' }}>
-                      <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
-                      <input
-                        type="text"
-                        className="form-input"
-                        style={{ paddingLeft: '2.2rem', textAlign: 'right' }}
-                        placeholder={formatRupiah(defaultFee)}
-                        value={tutorForm.category_rates[c.id] ?? ''}
-                        onChange={(e) => {
-                          const formatted = formatRupiah(e.target.value);
-                          setTutorForm({
+                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span className="badge badge-indigo" style={{ minWidth: '60px', textAlign: 'center' }}>{c.code}</span>
+                      <span style={{ flex: 1, fontSize: '0.85rem', color: '#334155' }}>{c.name}</span>
+                      <div style={{ position: 'relative', width: '160px' }}>
+                        <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.825rem', color: '#64748b', fontWeight: 600 }}>Rp</span>
+                        <input
+                          type="number"
+                          className="form-input"
+                          style={{ paddingLeft: '2.2rem' }}
+                          placeholder={parseFloat(defaultFee).toLocaleString('id-ID')}
+                          value={rawVal ?? ''}
+                          onChange={(e) => setTutorForm({
                             ...tutorForm,
-                            category_rates: { ...tutorForm.category_rates, [c.id]: formatted }
-                          });
-                        }}
-                      />
+                            category_rates: { ...tutorForm.category_rates, [c.id]: e.target.value }
+                          })}
+                        />
+                      </div>
                     </div>
+                    {numVal > 0 && (
+                      <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#059669', fontWeight: 600, paddingRight: '0.25rem' }}>
+                        = Rp {numVal.toLocaleString('id-ID')}
+                      </div>
+                    )}
                   </div>
                 );
               })}
