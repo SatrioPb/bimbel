@@ -459,15 +459,13 @@ const History = () => {
                               <Edit2 size={14} color="#2563eb" />
                               <span>Edit</span>
                             </button>
-                            {isAdmin && (
-                              <button
-                                onClick={() => handleDeleteRequest(att)}
-                                className="btn btn-danger btn-sm"
-                                title="Hapus Data Riwayat"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => handleDeleteRequest(att)}
+                              className="btn btn-danger btn-sm"
+                              title="Hapus Data Riwayat"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         </td>
                     </tr>
