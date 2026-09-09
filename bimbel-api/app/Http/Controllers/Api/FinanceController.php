@@ -193,7 +193,7 @@ class FinanceController extends Controller
         ];
 
         $printedCarbon = \Carbon\Carbon::now();
-        $dueCarbon = $printedCarbon->copy()->addDays(6);
+        $dueCarbon = $printedCarbon->copy()->addDays(2);
 
         $printedDateFormatted = $printedCarbon->format('d') . ' ' . ($monthsIndo[(int)$printedCarbon->format('m')] ?? '') . ' ' . $printedCarbon->format('Y');
         $dueDateFormatted = $dueCarbon->format('d') . ' ' . ($monthsIndo[(int)$dueCarbon->format('m')] ?? '') . ' ' . $dueCarbon->format('Y');
@@ -203,7 +203,7 @@ class FinanceController extends Controller
             'attendances' => $attendances,
             'printedDate' => $printedDateFormatted,
             'dueDate' => $dueDateFormatted,
-            'termin' => '6 hari'
+            'termin' => '2 hari'
         ]);
         $pdf->setOption('isRemoteEnabled', true);
         $pdf->setOption('isFontSubsettingEnabled', true);

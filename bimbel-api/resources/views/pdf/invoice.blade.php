@@ -203,7 +203,7 @@
                         </tr>
                         <tr>
                             <td>Termin</td>
-                            <td>{{ $termin ?? '6 hari' }}</td>
+                            <td>{{ $termin ?? '2 hari' }}</td>
                         </tr>
                         <tr>
                             <td>Jatuh Tempo</td>
