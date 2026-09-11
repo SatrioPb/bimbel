@@ -19,6 +19,7 @@ bimbel-api/bootstrap/cache/*.php
 *.jpg
 *.jpeg
 *.png
+!bimbel-api/public/images/*
 Screenshot*
 
 # IDE & OS files
