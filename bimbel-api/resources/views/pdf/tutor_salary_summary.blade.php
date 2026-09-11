@@ -50,8 +50,17 @@
 </head>
 <body>
     <div class="header">
+        <div style="margin-bottom: 8px; text-align: center;">
+            @if(file_exists(public_path('images/logo_bimbel.png')))
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_bimbel.png'))) }}" style="height: 50px; width: auto; margin-right: 15px; vertical-align: middle;" alt="Logo Bimbel Bintang">
+            @endif
+            @if(file_exists(public_path('images/logo_ahe.png')))
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_ahe.png'))) }}" style="height: 50px; width: auto; vertical-align: middle;" alt="Logo AHE">
+            @endif
+        </div>
         <h2>BIMBEL BINTANG</h2>
-        <p>Laporan Rekapitulasi Gaji Guru Les - Periode {{ $data['month_name'] }} {{ $year }}</p>
+        <p style="font-size: 11px; color: #000000; font-weight: 500; margin-bottom: 3px;">Grogol Tengah RT 3 RW 4, Bakalan Krapyak, Kaliwungu, Kudus | HP: 0858-7688-7059</p>
+        <p style="font-weight: 700;">Laporan Rekapitulasi Gaji Guru Les - Periode {{ $data['month_name'] }} {{ $year }}</p>
     </div>
 
     <div class="summary-card">

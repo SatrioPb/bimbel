@@ -45,12 +45,15 @@ class AttendanceController extends Controller
             'tutor_id' => 'required|exists:tutors,id',
             'student_id' => 'required|exists:students,id',
             'les_category_id' => 'required|exists:les_categories,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today|before_or_equal:today',
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
             'duration_minutes' => 'nullable|integer',
             'subject' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+        ], [
+            'date.after_or_equal' => 'Presensi mengajar tidak dapat dicatat untuk hari sebelumnya.',
+            'date.before_or_equal' => 'Presensi mengajar hanya dapat dicatat untuk hari ini.',
         ]);
 
         $category = LesCategory::find($request->les_category_id);

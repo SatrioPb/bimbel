@@ -172,11 +172,19 @@
         <table class="header-table">
             <tr>
                 <td width="55%">
+                    <div style="margin-bottom: 10px;">
+                        @if(file_exists(public_path('images/logo_bimbel.png')))
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_bimbel.png'))) }}" style="height: 48px; width: auto; margin-right: 12px; vertical-align: middle;" alt="Logo Bimbel Bintang">
+                        @endif
+                        @if(file_exists(public_path('images/logo_ahe.png')))
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_ahe.png'))) }}" style="height: 48px; width: auto; vertical-align: middle;" alt="Logo AHE">
+                        @endif
+                    </div>
                     <div class="brand-title">BIMBEL BINTANG</div>
                     <div class="brand-address">
-                        Grogol Tengah RT: 3/4 Bakalankrapyak<br>
-                        Kaliwungu Kudus<br>
-                        HP: 0888-2538-604
+                        Grogol Tengah RT 3 RW 4, Bakalan Krapyak<br>
+                        Kaliwungu, Kudus<br>
+                        HP: 0858-7688-7059
                     </div>
 
                     <div class="recipient-box">

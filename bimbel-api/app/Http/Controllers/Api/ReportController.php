@@ -105,10 +105,9 @@ class ReportController extends Controller
         $sheet->setCellValue('D1', 'Nama Murid');
         $sheet->setCellValue('E1', 'Kategori Les');
         $sheet->setCellValue('F1', 'Guru Les');
-        $sheet->setCellValue('G1', 'Mata Pelajaran');
+        $sheet->setCellValue('G1', 'Catatan');
         $sheet->setCellValue('H1', 'Durasi (Menit)');
         $sheet->setCellValue('I1', 'Tarif Biaya Les per Sesi');
-        $sheet->setCellValue('J1', 'Catatan');
 
         $row = 2;
         $totalFee = 0;
@@ -124,10 +123,9 @@ class ReportController extends Controller
             $sheet->setCellValue('D' . $row, $item->student->name ?? '');
             $sheet->setCellValue('E' . $row, $item->lesCategory->name ?? '-');
             $sheet->setCellValue('F' . $row, $item->tutor->name ?? '');
-            $sheet->setCellValue('G' . $row, $item->subject ?? '-');
+            $sheet->setCellValue('G' . $row, $item->notes ?? '-');
             $sheet->setCellValue('H' . $row, $item->duration_minutes);
             $sheet->setCellValue('I' . $row, $fee);
-            $sheet->setCellValue('J' . $row, $item->notes ?? '-');
             $row++;
         }
 
@@ -226,10 +224,9 @@ class ReportController extends Controller
         $sheet->setCellValue('C1', 'Nama Guru');
         $sheet->setCellValue('D1', 'Nama Murid');
         $sheet->setCellValue('E1', 'Kategori Les');
-        $sheet->setCellValue('F1', 'Mata Pelajaran');
+        $sheet->setCellValue('F1', 'Catatan');
         $sheet->setCellValue('G1', 'Durasi (Menit)');
         $sheet->setCellValue('H1', 'Gaji Guru (Honor)');
-        $sheet->setCellValue('I1', 'Catatan');
 
         $row = 2;
         $totalSalary = 0;
@@ -244,10 +241,9 @@ class ReportController extends Controller
             $sheet->setCellValue('C' . $row, $item->tutor->name ?? '');
             $sheet->setCellValue('D' . $row, $item->student->name ?? '');
             $sheet->setCellValue('E' . $row, $item->lesCategory->name ?? '-');
-            $sheet->setCellValue('F' . $row, $item->subject ?? '-');
+            $sheet->setCellValue('F' . $row, $item->notes ?? '-');
             $sheet->setCellValue('G' . $row, $item->duration_minutes);
             $sheet->setCellValue('H' . $row, $fee);
-            $sheet->setCellValue('I' . $row, $item->notes ?? '-');
             $row++;
         }
 

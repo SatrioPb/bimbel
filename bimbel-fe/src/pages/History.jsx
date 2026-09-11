@@ -253,14 +253,18 @@ const History = () => {
             </button>
           )}
 
-          <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: '#fecdd3', color: '#be123c' }}>
-            <FileText size={18} />
-            <span>Export PDF</span>
-          </button>
-          <button onClick={() => handleExport('excel')} className="btn btn-emerald">
-            <FileSpreadsheet size={18} />
-            <span>Export Excel</span>
-          </button>
+          {isAdmin && (
+            <>
+              <button onClick={() => handleExport('pdf')} className="btn btn-secondary" style={{ borderColor: '#fecdd3', color: '#be123c' }}>
+                <FileText size={18} />
+                <span>Export PDF</span>
+              </button>
+              <button onClick={() => handleExport('excel')} className="btn btn-emerald">
+                <FileSpreadsheet size={18} />
+                <span>Export Excel</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 

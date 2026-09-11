@@ -46,8 +46,17 @@
 </head>
 <body>
     <div class="header">
+        <div style="margin-bottom: 8px; text-align: center;">
+            @if(file_exists(public_path('images/logo_bimbel.png')))
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_bimbel.png'))) }}" style="height: 50px; width: auto; margin-right: 15px; vertical-align: middle;" alt="Logo Bimbel Bintang">
+            @endif
+            @if(file_exists(public_path('images/logo_ahe.png')))
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_ahe.png'))) }}" style="height: 50px; width: auto; vertical-align: middle;" alt="Logo AHE">
+            @endif
+        </div>
         <h2>BIMBEL BINTANG</h2>
-        <p>Laporan Riwayat Absensi Murid Les</p>
+        <p style="font-size: 11px; color: #000000; font-weight: 500; margin-bottom: 3px;">Grogol Tengah RT 3 RW 4, Bakalan Krapyak, Kaliwungu, Kudus | HP: 0858-7688-7059</p>
+        <p style="font-weight: 700;">Laporan Riwayat Absensi Murid Les</p>
     </div>
 
     @if(isset($student))
@@ -77,7 +86,7 @@
                 <th width="20%">Nama Murid</th>
                 <th width="18%">Guru Les</th>
                 <th width="13%">Jenis Les</th>
-                <th width="15%">Mata Pelajaran</th>
+                <th width="15%">Catatan</th>
                 <th width="15%" style="text-align: right;">Tarif Biaya Les</th>
             </tr>
         </thead>
@@ -96,7 +105,7 @@
                 <td>{{ $item->student->name ?? '-' }}</td>
                 <td>{{ $item->tutor->name ?? '-' }}</td>
                 <td>{{ $item->lesCategory->code ?? $item->lesCategory->name ?? '-' }}</td>
-                <td>{{ $item->subject ?: '-' }}</td>
+                <td>{{ $item->notes ?: '-' }}</td>
                 <td style="text-align: right; font-weight: bold;">
                     Rp {{ number_format($fee, 0, ',', '.') }}
                 </td>
