@@ -80,18 +80,8 @@ const Attendance = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (formData.date !== todayStr) {
-      setMessage({
-        type: 'danger',
-        text: 'Presensi mengajar hanya dapat dicatat untuk hari ini.'
-      });
-      return;
-    }
-
     setSubmitting(true);
+    setMessage(null);
 
     try {
       const res = await apiClient.post('/attendances', formData);
@@ -250,21 +240,16 @@ const Attendance = () => {
               </select>
             </div>
 
-            {/* Tanggal (Hanya Hari Ini) */}
+            {/* Tanggal */}
             <div className="form-group">
-              <label className="form-label">Tanggal Mengajar (Hari Ini) *</label>
+              <label className="form-label">Tanggal Mengajar *</label>
               <input
                 type="date"
                 className="form-input"
                 value={formData.date}
-                min={new Date().toISOString().split('T')[0]}
-                max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />
-              <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
-                * Presensi hanya dapat dicatat untuk tanggal hari ini.
-              </span>
             </div>
           </div>
 
