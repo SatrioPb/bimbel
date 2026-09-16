@@ -92,6 +92,72 @@
         </tbody>
     </table>
 
+    <!-- Rincian Total Invoice Per Murid Per Bulan -->
+    <div style="margin-top: 30px;">
+        <h3 style="margin-bottom: 12px; color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 4px; font-size: 13px; font-weight: 700; text-transform: uppercase;">
+            RINCIAN TOTAL INVOICE PER MURID PER BULAN (TAHUN {{ $year }})
+        </h3>
+
+        @php $hasAnyInvoices = false; @endphp
+        @foreach($monthlyReport as $row)
+            @if(isset($row['student_invoices']) && count($row['student_invoices']) > 0)
+                @php $hasAnyInvoices = true; @endphp
+                <div style="margin-top: 15px; margin-bottom: 6px;">
+                    <strong style="font-size: 11.5px; color: #1a202c; text-transform: uppercase;">
+                        📅 BULAN {{ $row['month_name'] }} {{ $year }}
+                        <span style="font-weight: normal; font-size: 10.5px; color: #4a5568;">
+                            ({{ $row['total_invoices_count'] }} Invoice | {{ $row['paid_invoices_count'] }} Lunas)
+                        </span>
+                    </strong>
+                </div>
+
+                <table class="table" style="margin-top: 4px; margin-bottom: 15px;">
+                    <thead>
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="20%">No. Invoice</th>
+                            <th width="23%">Nama Murid</th>
+                            <th width="17%">Wali Murid</th>
+                            <th width="10%" style="text-align: center;">Sesi</th>
+                            <th width="14%" class="text-right">Total Tagihan</th>
+                            <th width="11%" style="text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $monthSubtotal = 0; @endphp
+                        @foreach($row['student_invoices'] as $idx => $inv)
+                        @php $monthSubtotal += $inv['final_amount']; @endphp
+                        <tr>
+                            <td style="text-align: center;">{{ $idx + 1 }}</td>
+                            <td><strong>{{ $inv['invoice_number'] }}</strong></td>
+                            <td>{{ $inv['student_name'] }}</td>
+                            <td>{{ $inv['parent_name'] }}</td>
+                            <td style="text-align: center;">{{ $inv['total_sessions'] }} Sesi</td>
+                            <td class="text-right" style="font-weight: 600;">
+                                Rp {{ number_format($inv['final_amount'], 0, ',', '.') }}
+                            </td>
+                            <td style="text-align: center; font-weight: bold; color: {{ $inv['status'] === 'paid' ? '#2f855a' : '#c53030' }};">
+                                {{ strtoupper($inv['status'] === 'paid' ? 'LUNAS' : 'BELUM') }}
+                            </td>
+                        </tr>
+                        @endforeach
+                        <tr style="background-color: #ebf8ff; font-weight: bold;">
+                            <td colspan="5" style="text-align: right; color: #2b6cb0;">TOTAL TAGIHAN {{ strtoupper($row['month_name']) }}:</td>
+                            <td class="text-right" style="color: #2b6cb0;">
+                                Rp {{ number_format($monthSubtotal, 0, ',', '.') }}
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            @endif
+        @endforeach
+
+        @if(!$hasAnyInvoices)
+            <p style="text-align: center; color: #718096; margin-top: 15px;">Belum ada data invoice murid pada tahun {{ $year }}.</p>
+        @endif
+    </div>
+
     <div class="footer">
         Dicetak pada: {{ date('d/m/Y H:i') }} WIB
     </div>

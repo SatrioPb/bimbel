@@ -244,9 +244,8 @@ class FinanceController extends Controller
         $sheet->setCellValue('F1', 'Jumlah Sesi');
         $sheet->setCellValue('G1', 'Tarif Per Sesi');
         $sheet->setCellValue('H1', 'Total Tagihan');
-        $sheet->setCellValue('I1', 'Diskon');
-        $sheet->setCellValue('J1', 'Tagihan Akhir');
-        $sheet->setCellValue('K1', 'Status');
+        $sheet->setCellValue('I1', 'Tagihan Akhir');
+        $sheet->setCellValue('J1', 'Status');
 
         $row = 2;
         foreach ($invoices as $index => $item) {
@@ -258,9 +257,8 @@ class FinanceController extends Controller
             $sheet->setCellValue('F' . $row, $item->total_sessions);
             $sheet->setCellValue('G' . $row, $item->fee_per_session);
             $sheet->setCellValue('H' . $row, $item->total_amount);
-            $sheet->setCellValue('I' . $row, $item->discount);
-            $sheet->setCellValue('J' . $row, $item->final_amount);
-            $sheet->setCellValue('K' . $row, strtoupper($item->status));
+            $sheet->setCellValue('I' . $row, $item->final_amount);
+            $sheet->setCellValue('J' . $row, strtoupper($item->status));
             $row++;
         }
 
@@ -285,10 +283,27 @@ class FinanceController extends Controller
         ];
 
         foreach ($months as $m => $monthName) {
-            $invoices = Invoice::where('year', $year)->where('month', $m)->get();
+            $invoices = Invoice::with('student')->where('year', $year)->where('month', $m)->get();
             $income = $invoices->where('status', 'paid')->sum('final_amount');
             $paidCount = $invoices->where('status', 'paid')->count();
             $totalCount = $invoices->count();
+
+            $studentInvoices = [];
+            foreach ($invoices as $inv) {
+                $studentInvoices[] = [
+                    'id' => $inv->id,
+                    'invoice_number' => $inv->invoice_number,
+                    'student_code' => $inv->student->student_code ?? '-',
+                    'student_name' => $inv->student->name ?? 'Murid Tidak Ditemukan',
+                    'parent_name' => $inv->student->parent_name ?? '-',
+                    'total_sessions' => $inv->total_sessions,
+                    'fee_per_session' => (float)$inv->fee_per_session,
+                    'total_amount' => (float)$inv->total_amount,
+                    'discount' => (float)$inv->discount,
+                    'final_amount' => (float)$inv->final_amount,
+                    'status' => $inv->status,
+                ];
+            }
 
             $monthlyReport[] = [
                 'month' => $m,
@@ -296,6 +311,7 @@ class FinanceController extends Controller
                 'total_invoices_count' => $totalCount,
                 'paid_invoices_count' => $paidCount,
                 'income' => (float)$income,
+                'student_invoices' => $studentInvoices,
             ];
         }
 
@@ -334,7 +350,7 @@ class FinanceController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Pemasukan ' . $year);
 
-        // Header
+        // Header Section 1: Rekap Pemasukan Per Bulan
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Bulan');
         $sheet->setCellValue('C1', 'Total Invoice');
@@ -351,9 +367,55 @@ class FinanceController extends Controller
             $row++;
         }
 
-        // Total
-        $sheet->setCellValue('A' . $row, 'TOTAL');
+        // Total Summary Row
+        $sheet->setCellValue('A' . $row, 'TOTAL PEMASUKAN');
         $sheet->setCellValue('E' . $row, $data['total_income']);
+
+        // Header Section 2: Rincian Total Invoice Per Murid Per Bulan
+        $row += 3;
+        $sheet->setCellValue('A' . $row, 'RINCIAN TOTAL INVOICE PER MURID PER BULAN (TAHUN ' . $year . ')');
+        
+        $row++;
+        $sheet->setCellValue('A' . $row, 'No');
+        $sheet->setCellValue('B' . $row, 'Bulan');
+        $sheet->setCellValue('C' . $row, 'No. Invoice');
+        $sheet->setCellValue('D' . $row, 'Kode Murid');
+        $sheet->setCellValue('E' . $row, 'Nama Murid');
+        $sheet->setCellValue('F' . $row, 'Wali Murid');
+        $sheet->setCellValue('G' . $row, 'Jumlah Sesi');
+        $sheet->setCellValue('H' . $row, 'Tarif / Sesi (Rp)');
+        $sheet->setCellValue('I' . $row, 'Total Tagihan (Rp)');
+        $sheet->setCellValue('J' . $row, 'Tagihan Akhir (Rp)');
+        $sheet->setCellValue('K' . $row, 'Status');
+
+        $row++;
+        $studentCounter = 1;
+        $grandStudentFinalTotal = 0;
+
+        foreach ($data['monthly_report'] as $item) {
+            if (!empty($item['student_invoices'])) {
+                foreach ($item['student_invoices'] as $inv) {
+                    $sheet->setCellValue('A' . $row, $studentCounter++);
+                    $sheet->setCellValue('B' . $row, $item['month_name']);
+                    $sheet->setCellValue('C' . $row, $inv['invoice_number']);
+                    $sheet->setCellValue('D' . $row, $inv['student_code']);
+                    $sheet->setCellValue('E' . $row, $inv['student_name']);
+                    $sheet->setCellValue('F' . $row, $inv['parent_name']);
+                    $sheet->setCellValue('G' . $row, $inv['total_sessions']);
+                    $sheet->setCellValue('H' . $row, $inv['fee_per_session']);
+                    $sheet->setCellValue('I' . $row, $inv['total_amount']);
+                    $sheet->setCellValue('J' . $row, $inv['final_amount']);
+                    $sheet->setCellValue('K' . $row, strtoupper($inv['status'] === 'paid' ? 'LUNAS' : 'BELUM LUNAS'));
+
+                    $grandStudentFinalTotal += $inv['final_amount'];
+                    $row++;
+                }
+            }
+        }
+
+        // Total Tagihan Murid Overall
+        $sheet->setCellValue('A' . $row, 'TOTAL TAGIHAN KESELURUHAN');
+        $sheet->setCellValue('J' . $row, $grandStudentFinalTotal);
 
         $fileName = 'Laporan_Pemasukan_Keuangan_' . $year . '_' . date('Ymd_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
