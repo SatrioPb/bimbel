@@ -347,75 +347,78 @@ class FinanceController extends Controller
         $data = $this->incomeSummary($request)->getData(true)['data'];
 
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Laporan Pemasukan ' . $year);
 
-        // Header Section 1: Rekap Pemasukan Per Bulan
-        $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'Bulan');
-        $sheet->setCellValue('C1', 'Total Invoice');
-        $sheet->setCellValue('D1', 'Invoice Lunas');
-        $sheet->setCellValue('E1', 'Total Pemasukan (Rp)');
+        // Sheet 1: Rekap Pemasukan Bulanan
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('Rekap Pemasukan');
 
-        $row = 2;
+        $sheet1->setCellValue('A1', 'No');
+        $sheet1->setCellValue('B1', 'Bulan');
+        $sheet1->setCellValue('C1', 'Total Invoice');
+        $sheet1->setCellValue('D1', 'Invoice Lunas');
+        $sheet1->setCellValue('E1', 'Total Pemasukan (Rp)');
+
+        $row1 = 2;
         foreach ($data['monthly_report'] as $index => $item) {
-            $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, $item['month_name']);
-            $sheet->setCellValue('C' . $row, $item['total_invoices_count']);
-            $sheet->setCellValue('D' . $row, $item['paid_invoices_count']);
-            $sheet->setCellValue('E' . $row, $item['income']);
-            $row++;
+            $sheet1->setCellValue('A' . $row1, $index + 1);
+            $sheet1->setCellValue('B' . $row1, $item['month_name']);
+            $sheet1->setCellValue('C' . $row1, $item['total_invoices_count']);
+            $sheet1->setCellValue('D' . $row1, $item['paid_invoices_count']);
+            $sheet1->setCellValue('E' . $row1, $item['income']);
+            $row1++;
         }
 
-        // Total Summary Row
-        $sheet->setCellValue('A' . $row, 'TOTAL PEMASUKAN');
-        $sheet->setCellValue('E' . $row, $data['total_income']);
+        // Total Summary Row on Sheet 1
+        $sheet1->setCellValue('A' . $row1, 'TOTAL PEMASUKAN');
+        $sheet1->setCellValue('E' . $row1, $data['total_income']);
 
-        // Header Section 2: Rincian Total Invoice Per Murid Per Bulan
-        $row += 3;
-        $sheet->setCellValue('A' . $row, 'RINCIAN TOTAL INVOICE PER MURID PER BULAN (TAHUN ' . $year . ')');
+        // Sheet 2: Rincian Total Invoice Per Murid Per Bulan
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Rincian Invoice Murid');
         
-        $row++;
-        $sheet->setCellValue('A' . $row, 'No');
-        $sheet->setCellValue('B' . $row, 'Bulan');
-        $sheet->setCellValue('C' . $row, 'No. Invoice');
-        $sheet->setCellValue('D' . $row, 'Kode Murid');
-        $sheet->setCellValue('E' . $row, 'Nama Murid');
-        $sheet->setCellValue('F' . $row, 'Wali Murid');
-        $sheet->setCellValue('G' . $row, 'Jumlah Sesi');
-        $sheet->setCellValue('H' . $row, 'Tarif / Sesi (Rp)');
-        $sheet->setCellValue('I' . $row, 'Total Tagihan (Rp)');
-        $sheet->setCellValue('J' . $row, 'Tagihan Akhir (Rp)');
-        $sheet->setCellValue('K' . $row, 'Status');
+        $sheet2->setCellValue('A1', 'No');
+        $sheet2->setCellValue('B1', 'Bulan');
+        $sheet2->setCellValue('C1', 'No. Invoice');
+        $sheet2->setCellValue('D1', 'Kode Murid');
+        $sheet2->setCellValue('E1', 'Nama Murid');
+        $sheet2->setCellValue('F1', 'Wali Murid');
+        $sheet2->setCellValue('G1', 'Jumlah Sesi');
+        $sheet2->setCellValue('H1', 'Tarif / Sesi (Rp)');
+        $sheet2->setCellValue('I1', 'Total Tagihan (Rp)');
+        $sheet2->setCellValue('J1', 'Tagihan Akhir (Rp)');
+        $sheet2->setCellValue('K1', 'Status');
 
-        $row++;
+        $row2 = 2;
         $studentCounter = 1;
         $grandStudentFinalTotal = 0;
 
         foreach ($data['monthly_report'] as $item) {
             if (!empty($item['student_invoices'])) {
                 foreach ($item['student_invoices'] as $inv) {
-                    $sheet->setCellValue('A' . $row, $studentCounter++);
-                    $sheet->setCellValue('B' . $row, $item['month_name']);
-                    $sheet->setCellValue('C' . $row, $inv['invoice_number']);
-                    $sheet->setCellValue('D' . $row, $inv['student_code']);
-                    $sheet->setCellValue('E' . $row, $inv['student_name']);
-                    $sheet->setCellValue('F' . $row, $inv['parent_name']);
-                    $sheet->setCellValue('G' . $row, $inv['total_sessions']);
-                    $sheet->setCellValue('H' . $row, $inv['fee_per_session']);
-                    $sheet->setCellValue('I' . $row, $inv['total_amount']);
-                    $sheet->setCellValue('J' . $row, $inv['final_amount']);
-                    $sheet->setCellValue('K' . $row, strtoupper($inv['status'] === 'paid' ? 'LUNAS' : 'BELUM LUNAS'));
+                    $sheet2->setCellValue('A' . $row2, $studentCounter++);
+                    $sheet2->setCellValue('B' . $row2, $item['month_name']);
+                    $sheet2->setCellValue('C' . $row2, $inv['invoice_number']);
+                    $sheet2->setCellValue('D' . $row2, $inv['student_code']);
+                    $sheet2->setCellValue('E' . $row2, $inv['student_name']);
+                    $sheet2->setCellValue('F' . $row2, $inv['parent_name']);
+                    $sheet2->setCellValue('G' . $row2, $inv['total_sessions']);
+                    $sheet2->setCellValue('H' . $row2, $inv['fee_per_session']);
+                    $sheet2->setCellValue('I' . $row2, $inv['total_amount']);
+                    $sheet2->setCellValue('J' . $row2, $inv['final_amount']);
+                    $sheet2->setCellValue('K' . $row2, strtoupper($inv['status'] === 'paid' ? 'LUNAS' : 'BELUM LUNAS'));
 
                     $grandStudentFinalTotal += $inv['final_amount'];
-                    $row++;
+                    $row2++;
                 }
             }
         }
 
-        // Total Tagihan Murid Overall
-        $sheet->setCellValue('A' . $row, 'TOTAL TAGIHAN KESELURUHAN');
-        $sheet->setCellValue('J' . $row, $grandStudentFinalTotal);
+        // Total Tagihan Murid Overall on Sheet 2
+        $sheet2->setCellValue('A' . $row2, 'TOTAL TAGIHAN KESELURUHAN');
+        $sheet2->setCellValue('J' . $row2, $grandStudentFinalTotal);
+
+        // Set active sheet index to first sheet
+        $spreadsheet->setActiveSheetIndex(0);
 
         $fileName = 'Laporan_Pemasukan_Keuangan_' . $year . '_' . date('Ymd_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
