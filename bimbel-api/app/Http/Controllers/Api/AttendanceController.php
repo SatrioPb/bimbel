@@ -41,16 +41,24 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        $dateRules = 'required|date';
+        if ($user && $user->role === 'guru') {
+            $dateRules .= '|before_or_equal:today';
+        }
+
         $request->validate([
             'tutor_id' => 'required|exists:tutors,id',
             'student_id' => 'required|exists:students,id',
             'les_category_id' => 'required|exists:les_categories,id',
-            'date' => 'required|date',
+            'date' => $dateRules,
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
             'duration_minutes' => 'nullable|integer',
             'subject' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+        ], [
+            'date.before_or_equal' => 'Akun guru les hanya dapat mencatat presensi untuk hari ini dan hari sebelumnya.',
         ]);
 
         $category = LesCategory::find($request->les_category_id);

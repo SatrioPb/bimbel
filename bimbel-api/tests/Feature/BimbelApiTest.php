@@ -106,6 +106,29 @@ class BimbelApiTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
+    public function test_guru_cannot_log_future_attendance()
+    {
+        $guru = User::where('email', 'guru@bimbel.com')->first();
+        $student = Student::first();
+        $tutor = Tutor::first();
+        $category = LesCategory::first();
+
+        $futureDate = date('Y-m-d', strtotime('+2 days'));
+
+        $response = $this->actingAs($guru, 'sanctum')
+            ->postJson('/api/v1/attendances', [
+                'tutor_id' => $tutor->id,
+                'student_id' => $student->id,
+                'les_category_id' => $category->id,
+                'date' => $futureDate,
+                'duration_minutes' => 90,
+                'subject' => 'Matematika',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['date']);
+    }
+
     public function test_pdf_student_history_export()
     {
         $admin = User::where('email', 'admin@bimbel.com')->first();

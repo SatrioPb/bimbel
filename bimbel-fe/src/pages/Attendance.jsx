@@ -80,8 +80,18 @@ const Attendance = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
     setMessage(null);
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!isAdmin && formData.date > todayStr) {
+      setMessage({
+        type: 'danger',
+        text: 'Akun Guru Les hanya dapat mencatat presensi untuk hari ini dan hari sebelumnya.'
+      });
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
       const res = await apiClient.post('/attendances', formData);
@@ -247,6 +257,7 @@ const Attendance = () => {
                 type="date"
                 className="form-input"
                 value={formData.date}
+                max={!isAdmin ? new Date().toISOString().split('T')[0] : undefined}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
               />
